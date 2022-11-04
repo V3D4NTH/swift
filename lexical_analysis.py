@@ -2,14 +2,15 @@ import ply.lex as lex
 
 # Reserved words
 reserved = (
-    'FUNC', 'RETURN', 'IF', 'LET', 'WHILE'
+    'FUNC', 'RETURN', 'IF', 'LET', 'WHILE',
+
+
 
 )
 
 # Literals
 special_reserved = (
-    'INT', 'ID', 'NEW_LINE'
-
+    'INT', 'ID', 'INT_LITERAL', 'OR', 'AND'
 
 )
 
@@ -19,21 +20,19 @@ tokens = reserved + special_reserved
 t_ignore = ' \t\x0c'
 
 
-def t_NEW_LINE(t):
+def t_NEWLINE(t):
     r"\n+"
-    t.lexer.lineno += t.value.count("NEW_LINE")
-    return t
+    t.lexer.lineno += t.value.count("\n")
 
 
 # Operators
 # todo
-
 # Assignment operators
 # todo
 
 # # Delimeters
 
-literals = "+-*/%|&~^<>=!?()[]{}.,;:\\\'\""
+literals = "+-*/%~^<>=!?()[]{}.,;:\\\'\""
 
 # Identifiers and reserved words
 
@@ -46,6 +45,7 @@ def t_comment(t):
     r'//.*'
     t.lexer.lineno += t.value.count('\n')
 
+
 def t_Int(t):
     r'Int'
     t.type = reserved_map.get(t.value, "INT")
@@ -57,6 +57,23 @@ def t_ID(t):
     t.type = reserved_map.get(t.value, "ID")
     return t
 
+
+def t_INT_LITERAL(t):
+    r'[\d]+'
+    t.type = reserved_map.get(t.value, "INT_LITERAL")
+    return t
+
+
+def t_OR(t):
+    r'\|\|'
+    t.type = reserved_map.get(t.value, "OR")
+    return t
+
+
+def t_AND(t):
+    r'&&'
+    t.type = reserved_map.get(t.value, "AND")
+    return t
 
 def t_error(t):
     print("Illegal character %s" % repr(t.value[0]))
