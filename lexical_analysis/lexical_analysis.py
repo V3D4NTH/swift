@@ -7,26 +7,16 @@ reserved = (
     # Assignment (*=, /=, %=, +=, -=)
     'TIMES_EQUAL', 'DIV_EQUAL', 'MOD_EQUAL', 'PLUS_EQUAL', 'MINUS_EQUAL',
     'ARROW', 'EQUAL_EQUAL'
-
 )
-
 # Literals
+literals = "+-*/%^<>=!?()[]{}.,;:\\\'\""
+
 special_reserved = (
     'INT', 'ID', 'INT_LITERAL', 'OR', 'AND'
 
 )
-
-tokens = reserved + special_reserved
-
 # Completely ignored characters
 t_ignore = ' \t\x0c'
-
-
-def t_NEWLINE(t):
-    r"\n+"
-    t.lexer.lineno += t.value.count("\n")
-
-
 # Assignment operators
 t_EQUAL_EQUAL = r'=='
 t_TIMES_EQUAL = r'\*='
@@ -36,13 +26,16 @@ t_PLUS_EQUAL = r'\+='
 t_MINUS_EQUAL = r'-='
 t_ARROW = r'->'
 
-literals = "+-*/%^<>=!?()[]{}.,;:\\\'\""
-
+tokens = reserved + special_reserved
 # Identifiers and reserved words
-
 reserved_map = {}
 for r in reserved:
     reserved_map[r.lower()] = r
+
+
+def t_NEWLINE(t):
+    r"\n+"
+    t.lexer.lineno += t.value.count("\n")
 
 
 def t_comment(t):
@@ -79,6 +72,7 @@ def t_AND(t):
     t.type = reserved_map.get(t.value, "AND")
     return t
 
+
 def t_error(t):
     print("Illegal character %s" % repr(t.value[0]))
     t.lexer.skip(1)
@@ -86,6 +80,8 @@ def t_error(t):
 
 lexer = lex.lex()
 if __name__ == "__main__":
-    with open("sample_input/sample.swift") as f:
+    with open("../sample_input/sample.swift") as f:
         code = f.read()
-    lex.runmain(lexer, code)
+    import sys
+    with open("./lexical_output.txt", "w") as sys.stdout:
+        lex.runmain(lexer, code)
