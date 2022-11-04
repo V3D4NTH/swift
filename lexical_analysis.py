@@ -5,7 +5,7 @@ reserved = (
     'FUNC', 'RETURN', 'IF', 'LET', 'WHILE',
 
     # Assignment (*=, /=, %=, +=, -=)
-    'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUS_EQUAL', 'MINUSEQUAL',
+    'TIMES_EQUAL', 'DIV_EQUAL', 'MOD_EQUAL', 'PLUS_EQUAL', 'MINUS_EQUAL',
 
 )
 
@@ -26,14 +26,12 @@ def t_NEWLINE(t):
     t.lexer.lineno += t.value.count("\n")
 
 
-# Operators
-# todo
 # Assignment operators
-t_TIMESEQUAL = r'\*='
-t_DIVEQUAL = r'/='
-t_MODEQUAL = r'%='
+t_TIMES_EQUAL = r'\*='
+t_DIV_EQUAL = r'/='
+t_MOD_EQUAL = r'%='
 t_PLUS_EQUAL = r'\+='
-t_MINUSEQUAL = r'-='
+t_MINUS_EQUAL = r'-='
 
 literals = "+-*/%~^<>=!?()[]{}.,;:\\\'\""
 
