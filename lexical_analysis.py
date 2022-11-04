@@ -2,10 +2,11 @@ import ply.lex as lex
 
 # Reserved words
 reserved = (
-    'FUNC', 'RETURN', 'IF', 'LET', 'WHILE',
+    'FUNC', 'RETURN', 'IF', 'LET', 'WHILE', 'VAR',
 
     # Assignment (*=, /=, %=, +=, -=)
     'TIMES_EQUAL', 'DIV_EQUAL', 'MOD_EQUAL', 'PLUS_EQUAL', 'MINUS_EQUAL',
+    'ARROW', 'EQUAL_EQUAL'
 
 )
 
@@ -27,13 +28,15 @@ def t_NEWLINE(t):
 
 
 # Assignment operators
+t_EQUAL_EQUAL = r'=='
 t_TIMES_EQUAL = r'\*='
 t_DIV_EQUAL = r'/='
 t_MOD_EQUAL = r'%='
 t_PLUS_EQUAL = r'\+='
 t_MINUS_EQUAL = r'-='
+t_ARROW = r'->'
 
-literals = "+-*/%~^<>=!?()[]{}.,;:\\\'\""
+literals = "+-*/%^<>=!?()[]{}.,;:\\\'\""
 
 # Identifiers and reserved words
 
