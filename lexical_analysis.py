@@ -4,7 +4,8 @@ import ply.lex as lex
 reserved = (
     'FUNC', 'RETURN', 'IF', 'LET', 'WHILE',
 
-
+    # Assignment (*=, /=, %=, +=, -=)
+    'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUS_EQUAL', 'MINUSEQUAL',
 
 )
 
@@ -28,9 +29,11 @@ def t_NEWLINE(t):
 # Operators
 # todo
 # Assignment operators
-# todo
-
-# # Delimeters
+t_TIMESEQUAL = r'\*='
+t_DIVEQUAL = r'/='
+t_MODEQUAL = r'%='
+t_PLUS_EQUAL = r'\+='
+t_MINUSEQUAL = r'-='
 
 literals = "+-*/%~^<>=!?()[]{}.,;:\\\'\""
 
