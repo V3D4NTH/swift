@@ -2,15 +2,13 @@ import ply.lex as lex
 
 # Reserved words
 reserved = (
-    # todo
-    'FUNC',
+    'FUNC', 'RETURN', 'IF', 'LET', 'WHILE'
 
 )
 
 # Literals
 special_reserved = (
-    # todo
-    'INT', 'ID',
+    'INT', 'ID', 'NEW_LINE'
 
 
 )
@@ -21,13 +19,11 @@ tokens = reserved + special_reserved
 t_ignore = ' \t\x0c'
 
 
-def t_NEWLINE(t):
+def t_NEW_LINE(t):
     r"\n+"
-    t.lexer.lineno += t.value.count("\n")
+    t.lexer.lineno += t.value.count("NEW_LINE")
+    return t
 
-
-# Data Types
-t_INT = r'Int'
 
 # Operators
 # todo
@@ -49,6 +45,11 @@ for r in reserved:
 def t_comment(t):
     r'//.*'
     t.lexer.lineno += t.value.count('\n')
+
+def t_Int(t):
+    r'Int'
+    t.type = reserved_map.get(t.value, "INT")
+    return t
 
 
 def t_ID(t):
