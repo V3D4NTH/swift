@@ -6,6 +6,7 @@ from lexer import tokens
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
 hodne work in progess
 lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
+TODO JT debug pravidel gramatiky
 '''
 #set priority of operations - plus minus multiply and divide will branch out the tree to the left
 #the cfg is ambigous, therefore precende must be defined
@@ -21,6 +22,8 @@ def p_dekl_list(p):
     dekl_list : dekl
               | expression
               | dekl dekl_list
+              | block
+
     '''
 
     if len(p) == 2:
@@ -126,10 +129,10 @@ def p_val(p):
 
 def p_fun_dekl(p):
     '''
-    fun_dekl : func id lparent params rparent arrow dtype
+    fun_dekl : func id lparent params rparent arrow dtype comp_block
 
     '''
-    p[0] = {'operation':'function_signature', 'val':{'var':p[2],'params':p[4],'return_type':p[7]}}
+    p[0] = {'operation':'function_signature', 'val':{'var':p[2],'params':p[4],'return_type':p[7], 'body':p[8]}}
 
 #rule for function parameters, ie (<this>)
 def p_params(p):
@@ -163,18 +166,17 @@ def p_comp_block(p):
     p[0] = p[2]
 
 
-    #[block] := [comp_block] | | [loop_block] | | [cond_block] | | [ass_exp];[block] | |
-    #return [expr];
 #generic block statement rule
 def p_block(p):
     '''
-    block : comp_block
-        | loop_block
-        | cond_block
+    block : comp_block block
+        | loop_block block
+        | cond_block block
         | ass_exp semicolon block
+        | dekl block
         | return expression semicolon
     '''
-    if len(p) == 3:
+    if len(p) == 4 and p[1] == 'return':
         p[0] = {'operation':'return_statement','val':{'val':p[2]}}
     else:
         p[0] = p[1]
@@ -183,7 +185,7 @@ def p_block(p):
 #loop statement, only for cycle for now, will be expanded in future
 def p_loop_block(p):
     '''
-    loop_block : for lparent loop_var semicolon condition semicolon step semicolon rparent comp_block
+    loop_block : for lparent loop_var condition semicolon step semicolon rparent
     '''
     p[0] = {'operation' : 'for_loop','val':{'var':p[3],'condition':p[4],'step':p[6],'body':p[9]}}
 # condition block, if or if else statement. Switch-case might be added in future
@@ -250,35 +252,8 @@ def p_error(p):
         print(f"syntax error {p}")
 
 
-
+#for lparent loop_var condition semicolon step semicolon rparent
 y = yacc.yacc(debug=True)
-r = y.parse('func a ( b:int, c:int ) -> int ',lexer=lex)
+r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
 print(f" {r}")
-
-'''
-CFG of Not so Swift language
-[program] := [dekl_list] done
-[dekl_list] := [dekl] || [expr] || [dekl][dekl_list] done
-[dekl] := var [var_dekl]; || let [var_dekl];|| [fun_dekl] done
-[var_dekl] :=  id : [dtype] || id : [dtype] = [expr] done
-[fun_dekl] := func id([params]) -> [dtype][comp_block] done
-[params] := [params_var]|| empty done
-[params_var] :=  id : [dtype],[params_var] ||  id : [dtype] done
-[expr] := [term]+[term] || [term]-[term] || [term] done
-[term] := [expr] * [factor] || [exp] / [factor] || [factor] done
-[factor] := ([expr]) || -[exp] || [val] || [call] done
-[call] := id([arguments]); || id(); done
-[arguments] := [val],[arguments] || [val] done
-[block] := [comp_block] || [loop_block] || [cond_block] || [ass_exp];[block] || return [expr]; done
-[comp_block] := {[block]} done
-[loop_block] := for([loop_var];[condition];[step];)[comp_block]
-[cond_block] := if([condition])[comp_block] || if([condition])[comp_block]else[comp_block]
-[loop_var] := [var_dekl] || id
-[step] := id += digit || id -= digit
-[condition] := [expr] [relation_operator] [expr]
-[ass_exp] :=  var id : [dtype] = [expr] || let id : [dtype] = [expr] || id = [expr]
-[relation_operator] := == || < || > || >= || <= || !=
-[val] := id || digit done
-[dtype] := int || bool done
-'''
 

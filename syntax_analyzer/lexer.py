@@ -74,7 +74,7 @@ t_ignore = r' \t'
 
 lexer = lex.lex()
 '''
-data = 'for(a : int = 5; a < 10; a += 1){ return 5;}'
+data = '{return 5;}'
 
 
 
