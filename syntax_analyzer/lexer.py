@@ -7,7 +7,7 @@ keywords = (
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent','newline'
+    'ge', 'arrow', 'rcparent', 'lcparent','newline','ddot','comma','add', 'sub','not_equal'
 )
 #mnozina tokenu a rezervovanych slov
 reserved_set = set(tokens)
@@ -50,6 +50,8 @@ def t_bool(t):
 
 t_equals = r'='
 t_equals_equals = r'=='
+t_add = r'\+='
+t_sub = r'\-='
 t_plus = r'\+'
 t_minus = r'\-'
 t_divide = r'\/'
@@ -58,25 +60,28 @@ t_semicolon = r'\;'
 t_lparent = r'\('
 t_rparent = r'\)'
 t_lt = r'\<'
+t_not_equal = r'!='
 t_le = r'\<\='
 t_gt = r'\>'
 t_ge = r'\>\='
 t_arrow = r'\-\>'
 t_rcparent = r'\}'
 t_lcparent = r'\{'
+t_ddot = r'\:'
+t_comma = r'\,'
 #tabulatory a mezery nas nezajimaji
 t_ignore = r' \t'
 
 lexer = lex.lex()
-#data = '''x = 3 + 4 * 10 - 20 * 2
-#'''
-
 '''
+data = 'for(a : int = 5; a < 10; a += 1){ return 5;}'
+
+
 
 lexer.input(data)
 while True:
     tok = lexer.token()
     if not tok:
         break  # No more input
-    print(tok.lineno,tok.value)
+    print(tok)
 '''
