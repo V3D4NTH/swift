@@ -1,7 +1,5 @@
-import ply.yacc as yacc
-from lexer import lexer as lex
+from src.lex_analyzer.lexer import *
 #vytahnu tokeny, ktere jsem zadefinoval
-from lexer import tokens
 '''
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
 hodne work in progess
@@ -252,8 +250,4 @@ def p_error(p):
         print(f"syntax error {p}")
 
 
-#for lparent loop_var condition semicolon step semicolon rparent
-y = yacc.yacc(debug=True)
-r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
-print(f" {r}")
 

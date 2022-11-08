@@ -1,4 +1,3 @@
-import ply.lex as lex
 #klicove slova jazyku, pripadne muzeme rozsirit
 keywords = (
     'let', 'var', 'func', 'for', 'while', 'return', 'if', 'else', 'and', 'or'
@@ -72,7 +71,7 @@ t_comma = r'\,'
 #tabulatory a mezery nas nezajimaji
 t_ignore = r' \t'
 
-lexer = lex.lex()
+
 '''
 data = '{return 5;}'
 
