@@ -1,3 +1,1 @@
-
-from syntax_analyzer.lexer import *
-from syntax_analyzer.parser import *
+from src.pl0_code_generator.pl0 import *
