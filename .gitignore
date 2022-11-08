@@ -2,3 +2,4 @@
 parser.out
 parsetab.py
 lexical_output.txt
+__pycache__

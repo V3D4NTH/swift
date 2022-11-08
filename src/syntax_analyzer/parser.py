@@ -1,9 +1,5 @@
-import ply.yacc as yacc
-from lexer import lexer as lex
-from ast.node import Node
-
+from src.lex_analyzer.lexer import *
 #vytahnu tokeny, ktere jsem zadefinoval
-from lexer import tokens
 '''
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
 hodne work in progess
@@ -32,6 +28,7 @@ def p_dekl_list(p):
               | expression
               | dekl dekl_list
               | block
+
     '''
     children = [p[1]]
     if len(p) == 3:
@@ -263,11 +260,6 @@ def p_error(p):
 
 #for lparent loop_var condition semicolon step semicolon rparent
 y = yacc.yacc(debug=True)
-'''
-while True:
-    uin = input("Give command\n")
-    r = y.parse(uin)
-    print(f" {r}")
-'''
-r = y.parse('func a() -> int { let i:int = 10; return 3;}',lexer=lex)
+r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
+print(f" {r}")
 
