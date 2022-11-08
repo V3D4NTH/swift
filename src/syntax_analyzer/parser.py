@@ -1,5 +1,7 @@
-from src.lex_analyzer.lexer import *
 #vytahnu tokeny, ktere jsem zadefinoval
+from src.lex_analyzer.lexer import tokens
+from src.syntax_analyzer.node import Node
+
 '''
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
 hodne work in progess
@@ -28,6 +30,7 @@ def p_dekl_list(p):
               | expression
               | dekl dekl_list
               | block
+              | empty
 
     '''
     children = [p[1]]
@@ -55,9 +58,10 @@ def p_var_dekl(p):
     var_dekl : id ddot dtype semicolon
     | id ddot dtype equals expression semicolon
     '''
-    p[0] = {'operation':'var_declaration','val': {'var': p[1], 'dtype': p[3], 'value': 0}}
-    if len(p) > 5:
-        p[0]['val']['value'] = p[5]
+    if len(p) == 7:
+        p[0] = Node('var_declaration_expression',[p[1],p[3],p[5]])
+    else:
+        p[0] = Node('var_declaration',[p[1],p[3]])
 
 #data type, can be expanded in the future, so far our language accepts only integers and booleans
 def p_dtype(p):
@@ -65,11 +69,8 @@ def p_dtype(p):
     dtype : int
     | bool
     '''
-    p[0] = p[1]
+    p[0] = Node('data_type',[p[1]])
 #general expression - math expressions, variable assignments, functions calls, ...
-
-
-
 def p_expression(p):
     '''
     expression : expression minus term
@@ -77,11 +78,11 @@ def p_expression(p):
     | term
     '''
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = Node('expression_term', [p[1]])
     elif p[2] == '+':
-        p[0] = p[1] + p[3]
+        p[0] = Node('expression_sum', [p[1], p[3]])
     elif p[2] == '-':
-        p[0] = p[1] - p[3]
+        p[0] = Node('expression_minus', [p[1] , p[3]])
 
 def p_term(p):
     '''
@@ -90,11 +91,11 @@ def p_term(p):
     | factor
     '''
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = Node('factor',[p[1]])
     elif p[2] == '*':
-       p[0] = p[1] * p[3]
+        p[0] = Node('expression_multiply',[p[1], p[3]])
     elif p[2] == '/':
-        p[0] = p[1] // p[3]
+        p[0] = Node('expression_divide',[p[1], p[3]])
 
 def p_factor(p):
     '''
@@ -104,11 +105,11 @@ def p_factor(p):
     | call
     '''
     if len(p) == 4:
-        p[0] = p[2]
+        p[0] = Node('expression_in_parent',[p[2]])
     elif len(p) == 3:
-        p[0] = -p[1]
+        p[0] = Node('unary_minus',[-p[1]])
     elif len(p) == 2:
-        p[0] = p[1]
+        p[0] = Node('factor_expression',[p[1]])
 
 #empty rule, do nothing
 def p_empty(p):
@@ -121,16 +122,17 @@ def p_call(p):
     call : id lparent arguments rparent semicolon
          | id lparent rparent semicolon
     '''
-    p[0] = {'operation':'function_call','val':{'var':p[1]}}
+
+    p[0] = Node('function_call',[ p[1] ])
     if len(p) == 6:
-        p[0]['val']['args'] = p[3]
+        p[0].add_child_node(p[3])
 #generic rule for value, that is integer or identifier
 def p_val(p):
     '''
     val : int
     |   id
     '''
-    p[0] = p[1]
+    p[0] = Node('var_value',[p[1]])
 #rule for function declaration
 #node contains operation and val, val contains the relevant information about function, such as name, params, body and return type
 #    'fun_dekl : func id lparent params rparent arrow dtype comp_block'
@@ -138,9 +140,8 @@ def p_val(p):
 def p_fun_dekl(p):
     '''
     fun_dekl : func id lparent params rparent arrow dtype comp_block
-
     '''
-    p[0] = {'operation':'function_signature', 'val':{'var':p[2],'params':p[4],'return_type':p[7], 'body':p[8] }}
+    p[0] = Node('function_signature',[p[2],p[4],p[7],p[8]])
 
 #rule for function parameters, ie (<this>)
 def p_params(p):
@@ -148,7 +149,7 @@ def p_params(p):
     params : params_var
     | empty
     '''
-    p[0] = p[1]
+    p[0] = Node('params',[p[1]])
 #function parameter declaration
 #initial variable value set to 0
 def p_params_var(p):
@@ -156,7 +157,9 @@ def p_params_var(p):
     params_var : id ddot dtype comma params_var
                | id ddot dtype
     '''
-    p[0] = {'operation':'parameter_declaration', 'val':{'var':p[1], 'dtype':p[3], 'val':0}}
+    p[0] = Node('parameters_declaration',[p[1],p[3]])
+    if len(p) == 6:
+        p[0].add_child_node(p[5])
 
 #function arguments rule, multiple values separated by comma
 def p_arguments(p):
@@ -164,47 +167,52 @@ def p_arguments(p):
     arguments : val comma arguments
     |   val
     '''
-    p[0] = p[1]
+    p[0] = Node('arguments',[p[1]])
+    if len(p) == 4:
+        p[0].add_child_node(p[3])
 
 #compound block rule, ie {<block>}
 def p_comp_block(p):
     '''
     comp_block : lcparent block rcparent
     '''
-    p[0] = p[2]
+    p[0] = Node('compound_block',[p[2]])
 
 
 #generic block statement rule
 def p_block(p):
     '''
-    block : comp_block
+    block : comp_block dekl_list
         | loop_block dekl_list
         | cond_block dekl_list
-        | ass_exp semicolon dekl_list
+        | let var_dekl dekl_list
+        | var var_dekl dekl_list
         | return expression semicolon
     '''
-    if len(p) == 4 and p[1] == 'return':
-        p[0] = {'operation':'return_statement','val':{'val':p[2]}}
-    else:
-        p[0] = p[1]
-
+    if p[1] == 'return':
+        p[0] = Node('return_statement',[p[2]])
+    elif len(p) == 3:
+        p[0] = Node('block',[p[1],p[2]])
+    elif len(p) == 4:
+        p[0] = Node('block_var_dekl',[p[2],p[3]])
 
 #loop statement, only for cycle for now, will be expanded in future
 def p_loop_block(p):
     '''
     loop_block : for lparent loop_var condition semicolon step semicolon rparent comp_block
     '''
-    p[0] = {'operation' : 'for_loop','val':{'var':p[3],'condition':p[4],'step':p[6],'body':p[9]}}
+    p[0] = Node('loop_block',[p[3],p[4],p[6],p[9]])
 # condition block, if or if else statement. Switch-case might be added in future
 def p_cond_block(p):
     '''
     cond_block : if lparent condition rparent comp_block
     |            if lparent condition rparent comp_block else comp_block
     '''
-    p[0] = {'operation':'if_stmt', 'val':{'condition':p[3],'body':p[5]}}
     if len(p) == 8:
-        p[0]['operation'] = 'if_else_stmt'
-        p[0]['val']['else_body'] = p[7]
+        p[0] = Node('if_else_stmt',[p[3],p[5],p[7]])
+    elif len(p) == 6:
+        p[0] = Node('if_stmt', [p[3], p[5]])
+
 
 #loop variable responsible for loop behavior
 def p_loop_var(p):
@@ -214,14 +222,17 @@ def p_loop_var(p):
 
     | id
     '''
-    p[0] = p[1]
+    if len(p) == 3:
+        p[0] = Node('loop_var',[p[2]])
+    elif len(p) == 2:
+        p[0] = Node('loop_var',[p[1]])
 # step in for loop
 def p_step(p):
     '''
     step : id add int
     | id sub int
     '''
-    p[0] = {'operation':'for_loop_step','val':{'var':p[1], 'step_operation' : p[2], 'step_value': p[3]}}
+    p[0] = Node('loop_step',[p[1],p[2],p[3]])
 
 
 #condition statement
@@ -229,19 +240,22 @@ def p_condition(p):
     '''
     condition : expression relation_operator expression
     '''
-    p[0] = {'operation':'condition','val':{'left_side':p[1],'right_side':p[3],'relation':p[2]}}
+    p[0] = Node('condition',[p[1],p[2],p[3]])
+
 # assignment expresion
 #either a declaration of variable and assigning a value or assigning value to existing variable
+'''
 def p_ass_expression(p):
-    '''
+    ''
     ass_exp : var id ddot dtype equals expression
     |   let id ddot dtype equals expression
     | id equals expression
-    '''
+    ''
     if len(p) == 4:
-        p[0] = {'operation':'assignment','val':{'var':p[1],'val':p[3]}}
+        p[0] = Node('assign',[p[1],p[3]])
     elif len(p) == 7:
-        p[0] = {'operation':'declaration_assign','val':{'var':p[2],'dtype':p[4],'value':p[6]}}
+        p[0] = Node('declaration_assign',[p[2],p[4],p[6]])
+'''
 def p_relation_operator(p):
     '''
     relation_operator : equals_equals
@@ -251,7 +265,7 @@ def p_relation_operator(p):
     | ge
     | not_equal
     '''
-    p[0] = p[1]
+    p[0] = Node('relation_operator',[p[1]])
 #todo error handler
 def p_error(p):
     if not p:
@@ -259,7 +273,7 @@ def p_error(p):
 
 
 #for lparent loop_var condition semicolon step semicolon rparent
-y = yacc.yacc(debug=True)
-r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
-print(f" {r}")
+#y = yacc.yacc(debug=True)
+#r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
+#print(f" {r}")
 
