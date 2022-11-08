@@ -1,5 +1,7 @@
 import ply.yacc as yacc
 from lexer import lexer as lex
+from ast.node import Node
+
 #vytahnu tokeny, ktere jsem zadefinoval
 from lexer import tokens
 '''
@@ -8,13 +10,20 @@ hodne work in progess
 lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
 TODO JT debug pravidel gramatiky
 '''
+
+#root of AST tree
+root = None
+
 #set priority of operations - plus minus multiply and divide will branch out the tree to the left
 #the cfg is ambigous, therefore precende must be defined
 precedence = (('left','plus','minus'),('left','multiply','divide'))
 #entry point of program, the 'root' of the tree
 def p_program(p):
     'program : dekl_list'
-    p[0] = p[1]
+    root = Node('program')
+    root.add_child_node(p[1])
+    p[0] = root
+
 #program is just a bunch of declaration statements, this is the core of the grammar
 #declartion can produce functions, variables and general expressions, such as function calls or math expressions
 def p_dekl_list(p):
@@ -23,11 +32,12 @@ def p_dekl_list(p):
               | expression
               | dekl dekl_list
               | block
-
     '''
+    children = [p[1]]
+    if len(p) == 3:
+        children.append(p[2])
+    p[0] = Node('declaration',children)
 
-    if len(p) == 2:
-        p[0] = p[1]
 #declaration statement
 #here we declare variable, constant or a function
 def p_dekl(p):
@@ -36,10 +46,11 @@ def p_dekl(p):
     | let var_dekl
     | fun_dekl
     '''
+
     if len(p) == 2:
-        p[0] = {'operation':'function_declaration','val':p[1]}
+        p[0] = Node('function_declaration',[p[1]])
     elif len(p) == 3:
-        p[0] = {'operation':'declaration','val':p[2]}
+        p[0] = Node('variable_declaration',[p[1],p[2]])
 
 #variable declaration
 def p_var_dekl(p):
@@ -132,7 +143,7 @@ def p_fun_dekl(p):
     fun_dekl : func id lparent params rparent arrow dtype comp_block
 
     '''
-    p[0] = {'operation':'function_signature', 'val':{'var':p[2],'params':p[4],'return_type':p[7], 'body':p[8]}}
+    p[0] = {'operation':'function_signature', 'val':{'var':p[2],'params':p[4],'return_type':p[7], 'body':p[8] }}
 
 #rule for function parameters, ie (<this>)
 def p_params(p):
@@ -169,11 +180,10 @@ def p_comp_block(p):
 #generic block statement rule
 def p_block(p):
     '''
-    block : comp_block block
-        | loop_block block
-        | cond_block block
-        | ass_exp semicolon block
-        | dekl block
+    block : comp_block
+        | loop_block dekl_list
+        | cond_block dekl_list
+        | ass_exp semicolon dekl_list
         | return expression semicolon
     '''
     if len(p) == 4 and p[1] == 'return':
@@ -185,7 +195,7 @@ def p_block(p):
 #loop statement, only for cycle for now, will be expanded in future
 def p_loop_block(p):
     '''
-    loop_block : for lparent loop_var condition semicolon step semicolon rparent
+    loop_block : for lparent loop_var condition semicolon step semicolon rparent comp_block
     '''
     p[0] = {'operation' : 'for_loop','val':{'var':p[3],'condition':p[4],'step':p[6],'body':p[9]}}
 # condition block, if or if else statement. Switch-case might be added in future
@@ -202,7 +212,9 @@ def p_cond_block(p):
 #loop variable responsible for loop behavior
 def p_loop_var(p):
     '''
-    loop_var : var_dekl
+    loop_var : let var_dekl
+    | var var_dekl
+
     | id
     '''
     p[0] = p[1]
@@ -212,10 +224,7 @@ def p_step(p):
     step : id add int
     | id sub int
     '''
-    if p[2] == '+':
-        p[0] += p[3]
-    elif p[2] == '-':
-        p[0] -= p[3]
+    p[0] = {'operation':'for_loop_step','val':{'var':p[1], 'step_operation' : p[2], 'step_value': p[3]}}
 
 
 #condition statement
@@ -254,6 +263,11 @@ def p_error(p):
 
 #for lparent loop_var condition semicolon step semicolon rparent
 y = yacc.yacc(debug=True)
-r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)
-print(f" {r}")
+'''
+while True:
+    uin = input("Give command\n")
+    r = y.parse(uin)
+    print(f" {r}")
+'''
+r = y.parse('func a() -> int { let i:int = 10; return 3;}',lexer=lex)
 
