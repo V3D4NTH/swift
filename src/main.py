@@ -6,6 +6,7 @@ import src.pl0_code_generator as gen
 
 
 if __name__ == '__main__':
+
     lexer = ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=False)
     ast = y.parse(''
@@ -24,6 +25,8 @@ if __name__ == '__main__':
                   '}'
                   'main(1,2,3);')
     '''
+
+    print(ast.get_ascii(attributes=["name", "dist", "label", "complex"]))
     print(ast)
     '''
     generated_code = gen.Pl0(ast)
