@@ -1,5 +1,5 @@
 from src.pl0_code_generator.const import Inst as t, Op as o
-
+from ete3 import Tree
 
 def inst(instruction: t):
     return instruction.value
@@ -11,7 +11,7 @@ def op(operation: o):
 
 class Pl0:
 
-    def __init__(self, abstract_syntax_tree) -> None:
+    def __init__(self, abstract_syntax_tree: Tree) -> None:
         self.code = []
         self.ast = abstract_syntax_tree
         self.stck = []
