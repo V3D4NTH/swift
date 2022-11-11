@@ -1,3 +1,7 @@
+#  date: 6. 11. 2022
+#  author:  Jiri Trefil
+#
+
 # vytahnu tokeny, ktere jsem zadefinoval
 from ete3 import Tree
 
@@ -14,7 +18,6 @@ TODO JT debug pravidel gramatiky
 # root of AST tree
 root = None
 
-
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
 # the cfg is ambigous, therefore precende must be defined
 precedence = (('left', 'plus', 'minus'), ('left', 'multiply', 'divide'))
@@ -22,10 +25,11 @@ precedence = (('left', 'plus', 'minus'), ('left', 'multiply', 'divide'))
 
 # entry point of program, the 'root' of the tree
 def p_program(p):
-    'program : dekl_list'
+    """program : dekl_list"""
     root = Tree(name='program')
     root.add_child(p[1])
     p[0] = root
+
 
 # program is just a bunch of declaration statements, this is the core of the grammar
 # declartion can produce functions, variables and general expressions, such as function calls or math expressions
@@ -142,7 +146,9 @@ def p_call(p):
     p[0] = make_node('function_call', [p[1]])
     if len(p) == 6:
         make_node(p[0], [p[3]])
-#generic rule for value, that is integer or identifier
+
+
+# generic rule for value, that is integer or identifier
 def p_val(p):
     """
     val : int
@@ -182,6 +188,7 @@ def p_params_var(p):
     if len(p) == 6:
         make_node(p[0], [p[5]])
 
+
 # function arguments rule, multiple values separated by comma
 def p_arguments(p):
     """
@@ -191,6 +198,7 @@ def p_arguments(p):
     p[0] = make_node('arguments', [p[1]])
     if len(p) == 4:
         make_node(p[0], [p[3]])
+
 
 # compound block rule, ie {<block>}
 def p_comp_block(p):

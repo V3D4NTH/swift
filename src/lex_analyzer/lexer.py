@@ -1,20 +1,25 @@
-#klicove slova jazyku, pripadne muzeme rozsirit
+#  date: 6. 11. 2022
+#  author:  Jiri Trefil
+#
+
+# klicove slova jazyku, pripadne muzeme rozsirit
+from ply import lex
+
 keywords = (
     'let', 'var', 'func', 'for', 'while', 'return', 'if', 'else', 'and', 'or'
 )
-#tokeny, mely by pokryt vsechno, pripadne muzem rozsirit
+# tokeny, mely by pokryt vsechno, pripadne muzem rozsirit
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent','newline','ddot','comma','add', 'sub','not_equal'
+    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal'
 )
-#mnozina tokenu a rezervovanych slov
+# mnozina tokenu a rezervovanych slov
 reserved_set = set(tokens)
 
 reserved_map = {}
 for r in tokens:
     reserved_map[r.lower()] = r
-
 
 
 def t_comment(t):
@@ -26,7 +31,6 @@ def t_Int(t):
     r'Int'
     t.type = reserved_map.get(t.value, "int_type")
     return t
-
 
 
 def t_OR(t):
@@ -49,16 +53,21 @@ def t_id(t):
         t.type = t.value
     return t
 
-#token newline -> inkrementuj line number
+
+# token newline -> inkrementuj line number
 def t_newline(t):
     r'\n'
     t.lexer.lineno += 1
     return t
-#neznamy token, zahlas chybu
+
+
+# neznamy token, zahlas chybu
 def t_error(t):
     print(f"Unknown token: {t.value[0]}")
     t.lexer.skip(1)
-#zadefinuj token jako funkci - umozni k tomu pribalit nejaky vykonny kod
+
+
+# zadefinuj token jako funkci - umozni k tomu pribalit nejaky vykonny kod
 def t_int(t):
     r'\d+'
     try:
@@ -67,14 +76,16 @@ def t_int(t):
         print(f"Number {t.value} is not integer.")
         t.lexer.skip(1)
     return t
-#todo
-#booleany - mozna lepsi narvat tam 1 if t.value is true else 0
+
+
+# todo
+# booleany - mozna lepsi narvat tam 1 if t.value is true else 0
 def t_bool(t):
     r'true|false'
     t.value = bool(t.value)
 
 
-#tokeny popsane reg. vyrazy
+# tokeny popsane reg. vyrazy
 
 # asi todo
 # t_TIMES_EQUAL = r'\*='
@@ -103,19 +114,5 @@ t_rcparent = r'\}'
 t_lcparent = r'\{'
 t_ddot = r'\:'
 t_comma = r'\,'
-#tabulatory a mezery nas nezajimaji
+# tabulatory a mezery nas nezajimaji
 t_ignore = r' \t'
-
-
-'''
-data = '{return 5;}'
-
-
-
-lexer.input(data)
-while True:
-    tok = lexer.token()
-    if not tok:
-        break  # No more input
-    print(tok)
-'''
