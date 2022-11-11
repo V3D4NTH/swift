@@ -4,14 +4,14 @@
 
 from ete3 import Tree
 
-from src.pl0_code_generator.const import Inst as t, Op as o
+from src.pl0_code_generator.const import Inst as t, Op as o, reserved
 from src.pl0_code_generator.pl0_utils import inst, op
 
 
 # > The class Pl0 is a class that represents a PL/0 program
 class Pl0:
 
-    def __init__(self, abstract_syntax_tree: Tree) -> None:
+    def __init__(self, abstract_syntax_tree: Tree, lex_tokens) -> None:
         """
         The function takes in an abstract syntax tree and initializes the code, ast, and stck attributes.
 
@@ -21,6 +21,9 @@ class Pl0:
         self.code = []
         self.ast = abstract_syntax_tree
         self.stck = []
+        self.lex_tokens = lex_tokens
+        self.symbol_table = []
+        self.generate_table_of_symbols()
 
     def generate_instruction(self, inst_name, param1, param2):
         """
@@ -38,6 +41,16 @@ class Pl0:
         """
         for index, c in enumerate(self.code):
             print(index, "", c[0], c[1], c[2])
+
+    def generate_table_of_symbols(self):
+        """
+        It generates a table of symbols
+        """
+        symbols = self.ast.get_leaf_names()
+        for i in symbols:
+            if i not in reserved:
+                self.symbol_table.append(i)
+        print(self.symbol_table)
 
     def gen_const(self, const):
         """
@@ -65,7 +78,12 @@ class Pl0:
         pass
 
     def generate_code(self):
-        pass
+        for i in self.ast.iter_prepostorder():
+            if not i[0]:
+                if i[1].name in self.symbol_table:
+                    print(i[1].name)  # todo
+
+
 
     def gen_if_else(self, cond1, operator: o, cond2, statement_true, statement_false):
         self.gen_opr(cond1, operator, cond2)

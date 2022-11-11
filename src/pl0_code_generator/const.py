@@ -4,6 +4,9 @@
 
 from enum import Enum
 
+reserved = ['=', '==', '+=', '-=', '+', '-', '/', '*', ';', '(', ')', '<', '!=', '<=', '>', '>=', '->', '}', '{', ':',
+            ',', 'Int', 'var', 'let']
+
 
 # > The `Inst` class is an enumeration of the instructions that the PL/0 compiler will generate
 class Inst(Enum):
