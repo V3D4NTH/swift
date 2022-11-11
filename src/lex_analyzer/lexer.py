@@ -4,12 +4,41 @@ keywords = (
 )
 #tokeny, mely by pokryt vsechno, pripadne muzem rozsirit
 tokens = keywords + (
-    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int',
+    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
     'ge', 'arrow', 'rcparent', 'lcparent','newline','ddot','comma','add', 'sub','not_equal'
 )
 #mnozina tokenu a rezervovanych slov
 reserved_set = set(tokens)
+
+reserved_map = {}
+for r in tokens:
+    reserved_map[r.lower()] = r
+
+
+
+def t_comment(t):
+    r'//.*'
+    t.lexer.lineno += t.value.count('\n')
+
+
+def t_Int(t):
+    r'Int'
+    t.type = reserved_map.get(t.value, "int_type")
+    return t
+
+
+
+def t_OR(t):
+    r'\|\|'
+    t.type = reserved_map.get(t.value, "or")
+    return t
+
+
+def t_AND(t):
+    r'&&'
+    t.type = reserved_map.get(t.value, "and")
+    return t
 
 
 # chytam identifikatory
@@ -46,6 +75,12 @@ def t_bool(t):
 
 
 #tokeny popsane reg. vyrazy
+
+# asi todo
+# t_TIMES_EQUAL = r'\*='
+# t_DIV_EQUAL = r'/='
+# t_MOD_EQUAL = r'%='
+
 
 t_equals = r'='
 t_equals_equals = r'=='

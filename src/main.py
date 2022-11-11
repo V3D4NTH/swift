@@ -6,9 +6,10 @@ import src.pl0_code_generator as gen
 
 
 if __name__ == '__main__':
-    with open("../sample_input/operation.swift") as f:
+    with open("../sample_input/func_simple.swift") as f:
         code = f.read()
     lexer = ply.lex.lex(module=lexical)
+    ply.lex.runmain(lexer, code)
     y = yy.yacc(module=syntax, debug=False)
     ast = y.parse(code)
 

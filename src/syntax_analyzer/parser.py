@@ -2,6 +2,7 @@
 from ete3 import Tree
 
 from src.lex_analyzer.lexer import tokens
+from src.syntax_analyzer.utils import make_node
 
 """
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
@@ -12,19 +13,6 @@ TODO JT debug pravidel gramatiky
 
 # root of AST tree
 root = None
-
-
-def make_node(node_name: str, children=None) -> Tree:
-    ast = Tree(name=node_name)
-
-    if children is None:
-        return ast
-    for i in children:
-        if i.__class__.__name__ == 'TreeNode':
-            ast.add_child(child=i)
-        else:
-            ast.add_child(name=i)
-    return ast
 
 
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
@@ -87,7 +75,7 @@ def p_var_dekl(p):
 # data type, can be expanded in the future, so far our language accepts only integers and booleans
 def p_dtype(p):
     """
-    dtype : int
+    dtype : int_type
     | bool
     """
     p[0] = make_node('data_type', [p[1]])
