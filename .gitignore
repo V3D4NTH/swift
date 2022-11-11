@@ -3,3 +3,6 @@ parser.out
 parsetab.py
 lexical_output.txt
 __pycache__
+/shelf/
+/workspace.xml
+/.idea/
