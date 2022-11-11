@@ -5,16 +5,18 @@
 # klicove slova jazyku, pripadne muzeme rozsirit
 from ply import lex
 
+# A list of keywords that are used in the language.
 keywords = (
     'let', 'var', 'func', 'for', 'while', 'return', 'if', 'else', 'and', 'or'
 )
-# tokeny, mely by pokryt vsechno, pripadne muzem rozsirit
+
+# A list of tokens that the lexer will recognize.
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
     'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal'
 )
-# mnozina tokenu a rezervovanych slov
+
 reserved_set = set(tokens)
 
 reserved_map = {}
@@ -93,6 +95,7 @@ def t_bool(t):
 # t_MOD_EQUAL = r'%='
 
 
+# Defining the tokens that the lexer will recognize.
 t_equals = r'='
 t_equals_equals = r'=='
 t_add = r'\+='
@@ -114,5 +117,5 @@ t_rcparent = r'\}'
 t_lcparent = r'\{'
 t_ddot = r'\:'
 t_comma = r'\,'
-# tabulatory a mezery nas nezajimaji
+# Telling the lexer to ignore spaces and tabs.
 t_ignore = r' \t'

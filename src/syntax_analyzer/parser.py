@@ -15,9 +15,6 @@ lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
 TODO JT debug pravidel gramatiky
 """
 
-# root of AST tree
-root = None
-
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
 # the cfg is ambigous, therefore precende must be defined
 precedence = (('left', 'plus', 'minus'), ('left', 'multiply', 'divide'))
@@ -64,7 +61,7 @@ def p_dekl(p):
         p[0] = make_node('variable_declaration', [p[1], p[2]])
 
 
-# variable declaration
+# This function is used to declare a variable.
 def p_var_dekl(p):
     """
     var_dekl : id ddot dtype semicolon
@@ -293,6 +290,7 @@ def p_ass_expression(p):
 """
 
 
+# This function is used to parse the relational operators in the input.
 def p_relation_operator(p):
     """
     relation_operator : equals_equals

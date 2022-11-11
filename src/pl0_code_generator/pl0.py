@@ -5,6 +5,7 @@
 from src.pl0_code_generator.const import Inst as t, Op as o
 from ete3 import Tree
 
+
 def inst(instruction: t):
     """
     It takes an instruction and returns its value
@@ -51,19 +52,12 @@ class Pl0:
         """
         self.code.append([inst_name, param1, param2])
 
-    def generate_code(self):
-        pass
-
     def print_code(self):
         """
         It prints the code of the program
         """
         for index, c in enumerate(self.code):
             print(index, "", c[0], c[1], c[2])
-
-    def gen(self, something):
-        # dummy method
-        pass
 
     def gen_const(self, const):
         """
@@ -85,6 +79,13 @@ class Pl0:
         self.gen_const(const1)
         self.gen_const(const2)
         self.generate_instruction(inst(t.opr), 0, op(operator))
+
+    def gen(self, something):
+        # dummy method
+        pass
+
+    def generate_code(self):
+        pass
 
     def gen_if_else(self, cond1, operator: o, cond2, statement_true, statement_false):
         self.gen_opr(cond1, operator, cond2)
