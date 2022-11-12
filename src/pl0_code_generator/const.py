@@ -7,6 +7,31 @@ from enum import Enum
 reserved = ['=', '==', '+=', '-=', '+', '-', '/', '*', ';', '(', ')', '<', '!=', '<=', '>', '>=', '->', '}', '{', ':',
             ',', 'Int', 'var', 'let']
 
+types = [int]
+
+
+class SymbolRecord:
+
+    def __init__(self, name, symbol_type, const=False, level=0, address=0, size=0):
+        self.id = id(self)
+        self.name = name
+        self.type = symbol_type
+        self.const = const
+        self.level = level
+        self.address = address
+        self.size = size
+
+    def __str__(self):
+        print("--------record------")
+        print(self.id, "\t|",  "id")
+        print(self.name, "\t\t\t\t|",  "name")
+        print(self.type, "\t\t\t|",  "symbol_type")
+        print(self.const, "\t\t\t|",  "const")
+        print(self.level, "\t\t\t\t|",  "level")
+        print(self.address, "\t\t\t\t|",  "address")
+        print(self.size, "\t\t\t\t|",  "size")
+        print("--------------------")
+
 
 # > The `Inst` class is an enumeration of the instructions that the PL/0 compiler will generate
 class Inst(Enum):

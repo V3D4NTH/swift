@@ -1,1 +1,1 @@
-var a: Int = 1 + 1;
+let a: Int = 222 + 333;

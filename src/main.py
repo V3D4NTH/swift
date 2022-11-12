@@ -15,17 +15,17 @@ if __name__ == '__main__':
         code = f.read()
     # Parsing the code_input.
     lexer = ply.lex.lex(module=lexical)
-    y = yy.yacc(module=syntax, debug=False)
-    ast = y.parse(code)
+    y = yy.yacc(module=syntax, debug=True)
+    dst = y.parse(code)
 
     with open("../output/tokens.txt", mode="w") as f:
         sys.stdout = f
         ply.lex.runmain(lexer, code)
     sys.stdout = sys.__stdout__
-    print(ast.get_ascii(attributes=["name", "dist", "label", "complex"]))
-    print(ast)
+    print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
+    print(dst)
 
     # Generating the code for the PL/0 compiler.
-    generated_code = gen.Pl0(ast, lexer)
+    generated_code = gen.Pl0(dst)
     generated_code.generate_code()
     generated_code.print_code()
