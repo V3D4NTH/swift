@@ -1,1 +1,1 @@
-var a: Int = 10;
+{var a: Int = 10;}

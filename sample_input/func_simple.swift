@@ -1,1 +1,1 @@
-func a() -> Int {if (a<5){return 3;} return 10;}
+func function(a: Int) -> Int {if (a<5){ var n: Int = 6; return 3;} return 10;} var glob: Int = 666;

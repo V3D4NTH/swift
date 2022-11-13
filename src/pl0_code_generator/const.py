@@ -4,15 +4,37 @@
 
 from enum import Enum
 
-reserved = ['=', '==', '+=', '-=', '+', '-', '/', '*', ';', '(', ')', '<', '!=', '<=', '>', '>=', '->', '}', '{', ':',
-            ',', 'Int', 'var', 'let']
 
-types = [int]
+class Pl0Const:
+
+    def __init__(self):
+        self.reserved = ['=', '==', '+=', '-=', '+', '-', '/', '*', ';', '(', ')', '<', '!=', '<=', '>', '>=', '->',
+                         '}',
+                         '{', ':',
+                         ',', 'Int', 'var', 'let']
+
+        self.types = [int]
+
+        self.expressions = {"expression_sum": self.gen_opr_add, "expression_minus": self.gen_opr_sub,
+                            "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div}
+
+    def gen_opr_add(self, const1, const2):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_opr_sub(self, const1, const2):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_opr_mul(self, const1, const2):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_opr_div(self, const1, const2):
+        raise NotImplementedError("Method not yet implemented.")
 
 
 class SymbolRecord:
 
-    def __init__(self, name, symbol_type, const=False, level=0, address=0, size=0):
+    def __init__(self, name, symbol_type, const=False, level=0, address=0, size=0,
+                 params=None, return_type=None,  param=False,):
         self.id = id(self)
         self.name = name
         self.type = symbol_type
@@ -20,16 +42,26 @@ class SymbolRecord:
         self.level = level
         self.address = address
         self.size = size
+        self.param = param
+        if self.type == "func":
+            self.params = params
+            self.return_type = return_type
 
     def __str__(self):
         print("--------record------")
-        print(self.id, "\t|",  "id")
-        print(self.name, "\t\t\t\t|",  "name")
-        print(self.type, "\t\t\t|",  "symbol_type")
-        print(self.const, "\t\t\t|",  "const")
-        print(self.level, "\t\t\t\t|",  "level")
-        print(self.address, "\t\t\t\t|",  "address")
-        print(self.size, "\t\t\t\t|",  "size")
+        print(self.id, "\t|", "id")
+        print(self.name, "\t\t\t\t|", "name")
+        print(self.type, "\t\t\t|", "symbol_type")
+        print(self.const, "\t\t\t|", "const")
+        print(self.level, "\t\t\t\t|", "level")
+        print(self.address, "\t\t\t\t|", "address")
+        print(self.size, "\t\t\t\t|", "size")
+        if self.type == "func":
+            for i in self.params:
+                i.__str__()
+            print(self.return_type, "\t\t\t\t|", "return_type")
+        if self.param:
+            print(self.param, "\t\t\t\t|", "param")
         print("--------------------")
 
 
