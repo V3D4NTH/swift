@@ -5,6 +5,7 @@
 from enum import Enum
 
 
+# It's a class that holds the constants used by the PL/0 compiler
 class Pl0Const:
 
     def __init__(self):
@@ -19,22 +20,60 @@ class Pl0Const:
                             "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div}
 
     def gen_opr_add(self, const1, const2):
+        """
+        It adds two numbers.
+
+        :param const1: The first constant to add
+        :param const2: The second constant to add to the first
+        """
         raise NotImplementedError("Method not yet implemented.")
 
     def gen_opr_sub(self, const1, const2):
+        """
+        It subtracts two numbers.
+
+        :param const1: The first constant to be used in the operation
+        :param const2: The constant to be subtracted from
+        """
         raise NotImplementedError("Method not yet implemented.")
 
     def gen_opr_mul(self, const1, const2):
+        """
+        It generates a new constant
+        that is the product of two other constants
+
+        :param const1: The first constant to be multiplied
+        :param const2: The second constant to be multiplied
+        """
         raise NotImplementedError("Method not yet implemented.")
 
     def gen_opr_div(self, const1, const2):
+        """
+        It divides two numbers.
+
+        :param const1: The first constant to be used in the operation
+        :param const2: The constant to divide by
+        """
         raise NotImplementedError("Method not yet implemented.")
 
 
 class SymbolRecord:
 
     def __init__(self, name, symbol_type, const=False, level=0, address=0, size=0,
-                 params=None, return_type=None,  param=False,):
+                 params=None, return_type=None, param=False, ):
+        """
+        This function initializes the symbol record
+
+        :param name: The name of the symbol
+        :param symbol_type: The type of the symbol
+        :param const: True if the symbol is a constant, defaults to False (optional)
+        :param level: the level of the symbol (0 for global, 1 for local, etc.), defaults to 0 (optional)
+        :param address: The address of the symbol in memory, defaults to 0 (optional)
+        :param size: size of the variable in bytes, defaults to 0 (optional)
+        :param params: a list of parameters
+        :param return_type: The return type of the function
+        :param param: name of the variable, defaults to False (optional)
+        """
         self.id = id(self)
         self.name = name
         self.type = symbol_type
