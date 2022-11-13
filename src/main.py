@@ -10,18 +10,18 @@ import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
 
 
-if __name__ == '__main__':
-    with open("../sample_input/operation.swift") as f:
+def main(input_file_name: str):
+    with open(input_file_name) as f:
         code = f.read()
     # Parsing the code_input.
     lexer = ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=True)
     dst = y.parse(code)
 
-    with open("../output/tokens.txt", mode="w") as f:
-        sys.stdout = f
-        ply.lex.runmain(lexer, code)
-    sys.stdout = sys.__stdout__
+    # with open("../output/tokens.txt", mode="w") as f:
+    #     sys.stdout = f
+    #     ply.lex.runmain(lexer, code)
+    # sys.stdout = sys.__stdout__
     print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
     print(dst)
 
@@ -29,3 +29,8 @@ if __name__ == '__main__':
     generated_code = gen.Pl0(dst)
     generated_code.generate_code()
     generated_code.print_code()
+    return generated_code.return_code()
+
+
+if __name__ == '__main__':
+    main("../sample_input/operation.swift")

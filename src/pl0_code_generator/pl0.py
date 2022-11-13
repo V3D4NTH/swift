@@ -41,6 +41,16 @@ class Pl0:
         for index, c in enumerate(self.code):
             print(index, "", c[0], c[1], c[2])
 
+    def return_code(self) -> str:
+        """
+        This function returns a string of the code in the format of "index opcode operand1 operand2"
+        :return: The return_code method returns a string of the code.
+        """
+        code_string = ""
+        for index, c in enumerate(self.code):
+            code_string += (str(index) + " " + c[0] + " " + c[1] + " " + c[2] + "\n")
+        return code_string
+
     def generate_table_of_symbols(self):
         """
         It generates a table of symbols
