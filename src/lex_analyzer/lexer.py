@@ -60,7 +60,7 @@ def t_id(t):
 def t_newline(t):
     r'\n'
     t.lexer.lineno += 1
-    return t
+    t.lexer.skip(1)
 
 
 # neznamy token, zahlas chybu
