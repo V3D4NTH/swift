@@ -11,11 +11,28 @@ class Test(TestCase):
 
     def test_operation(self):
         code = main("../sample_input/operation.swift")
-        self.assertEqual("", code, "operation")
+        self.assertEqual(
+            """0 INT 0 4
+1 LIT 0 222
+2 LIT 0 333
+3 OPR 0 2
+4 STO 0 3
+""", code, "operation")
 
     def test_declaration(self):
         code = main("../sample_input/declaration.swift")
-        self.assertEqual(" ", code, "operation")
+        self.assertEqual("""0 INT 0 4
+1 LIT 0 222
+2 LIT 0 333
+3 OPR 0 2
+4 STO 0 3
+5 INT 0 4
+6 LOD 0 3
+7 LIT 0 10
+8 OPR 0 2
+9 STO 0 4
+"""
+                         , code, "operation")
 
     def test_for(self):
         code = main("../sample_input/for.swift")

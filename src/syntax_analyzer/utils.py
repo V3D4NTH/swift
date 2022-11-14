@@ -28,7 +28,7 @@ def make_node(node_name: str, children=None) -> Tree:
     return ast
 
 
-def generate_table_of_symbols(symbol_table, level=0, symbols=None):
+def generate_table_of_symbols(symbol_table, symbols: list, level=0,):
     """
         It generates a table of symbols
         """
@@ -63,8 +63,8 @@ def generate_table_of_symbols(symbol_table, level=0, symbols=None):
             if symbols[index].name in symbol_table.keys():
                 raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
             symbol_table[symbols[index].name] = (SymbolRecord(symbols[index].name,
-                                                              symbol_type=
-                                                              symbols[index].get_sisters()[0].children[0].name,
+                                                              symbol_type=symbols[index].get_sisters()[0].
+                                                              children[0].name,
                                                               level=level,
                                                               address=address))
             address += 1

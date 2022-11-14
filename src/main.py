@@ -40,7 +40,7 @@ def main(input_file_name: str):
     print("----------generated code------------")
     #generated_code.print_code()
     print("------------------------------------")
-    return ""
+    return generated_code.return_code()
 
 
 if __name__ == '__main__':

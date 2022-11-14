@@ -106,6 +106,11 @@ class Pl0(Pl0Const):
         pass
 
     def clear_tree(self, tree_iter_generator):
+        """
+        It takes a generator that yields tree iterators, and clears the tree of all rows
+
+        :param tree_iter_generator: A generator that returns a Gtk.TreeIter for each row in the tree
+        """
         sub_tree = []
         for i in tree_iter_generator:
             if not i[0]:
