@@ -11,7 +11,7 @@ from src.pl0_code_generator.pl0_utils import inst, op
 # > The class Pl0 is a class that represents a PL/0 program
 class Pl0(Pl0Const):
 
-    def __init__(self, abstract_syntax_tree: Tree) -> None:
+    def __init__(self, abstract_syntax_tree: Tree, symbol_table) -> None:
         """
         The function takes in an abstract syntax tree and initializes the code, ast, and stck attributes.
 
@@ -21,9 +21,7 @@ class Pl0(Pl0Const):
         super().__init__()
         self.code = []
         self.ast = abstract_syntax_tree
-        self.symbol_table = {}
-        self.generate_table_of_symbols(symbols=self.ast.get_leaves())
-        self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()))
+        self.symbol_table = symbol_table
 
     def generate_instruction(self, inst_name, param1, param2):
         """
@@ -63,50 +61,6 @@ class Pl0(Pl0Const):
         for index, c in enumerate(self.code):
             code_string += (str(index) + " " + str(c[0]) + " " + str(c[1]) + " " + str(c[2]) + "\n")
         return code_string
-
-    def generate_table_of_symbols(self, level=0, symbols=None):
-        """
-        It generates a table of symbols
-        """
-        symbols = symbols
-        level = level
-        index = 0
-        address = 3
-        while index < len(symbols):
-            ancestor = symbols[index].get_ancestors()[0]
-            if ancestor.name == "function_signature":
-                if symbols[index].name in self.symbol_table.keys():
-                    raise Exception("Duplicate symbol:", symbols[index].name, "in", self.symbol_table.keys())
-                params = {}
-                for index, i in enumerate(symbols[index].get_sisters()[0].children):
-                    id_and_type = i.get_leaf_names()
-                    if id_and_type[0] in params.keys():
-                        raise Exception("Duplicate symbol:", id_and_type[0], "in", params.keys())
-                    params[id_and_type[0]] = (SymbolRecord(id_and_type[0], id_and_type[1], param=True, level=level,
-                                                           address=address))
-                    address += 1
-                self.symbol_table[symbols[index].name] = (
-                    SymbolRecord(symbols[index].name, "func", params=params, level=level,
-                                 address=address,
-                                 return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
-                address += 1
-                func_body = symbols[index].get_sisters()[2].get_leaves()
-                # shifting index to skip duplicates
-                index += len(func_body)
-                # recursive call
-                self.generate_table_of_symbols(level=level + 1, symbols=func_body)
-            if ancestor.name == "var_declaration_expression":
-                if symbols[index].name in self.symbol_table.keys():
-                    raise Exception("Duplicate symbol:", symbols[index].name, "in", self.symbol_table.keys())
-                self.symbol_table[symbols[index].name] = (SymbolRecord(symbols[index].name,
-                                                                       symbol_type=
-                                                                       symbols[index].get_sisters()[0].children[0].name,
-                                                                       level=level,
-                                                                       address=address))
-                address += 1
-                if ancestor.get_sisters()[0].name == "let":
-                    self.symbol_table[symbols[index].name].const = True
-            index += 1
 
     def gen_const(self, const):
         """

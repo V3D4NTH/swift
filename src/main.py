@@ -8,6 +8,7 @@ import ply.yacc as yy
 import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
+from src.syntax_analyzer.utils import generate_table_of_symbols
 
 
 def main(input_file_name: str):
@@ -27,10 +28,12 @@ def main(input_file_name: str):
     # sys.stdout = sys.__stdout__
     print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
     print(dst)
+    table_of_symbols = {}
+    generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
 
     # Generating the code for the PL/0 compiler.
-    generated_code = gen.Pl0(dst)
-
+    generated_code = gen.Pl0(dst, table_of_symbols)
+    generated_code.generate_code(sub_tree=generated_code.clear_tree(generated_code.ast.iter_prepostorder()))
     # It prints the symbol table and the generated code.
     generated_code.print_symbol_table()
     print("----------generated code------------")
