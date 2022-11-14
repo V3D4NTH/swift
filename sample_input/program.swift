@@ -12,7 +12,7 @@ func someOtherFunction2(a:Int) -> Int{
     }
 }
 func someOtherFunction3(a:Int, b:Int) -> Int{
-    var a: Int = 0;
+    var c: Int = 0;
     for(var j: Int = 0; j < 32*42; j+= 1;){
         someOtherFunction();
         someOtherFunction2();

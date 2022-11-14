@@ -47,8 +47,12 @@ class Pl0(Pl0Const):
         for i in self.symbol_table.values():
             if i.type == "func":
                 print(i.__str__())
+                print("--------params--------")
                 for j in i.params:
                     print(i.params[j].__str__())
+                print("--------locals--------")
+                for k in i.locals:
+                    print(i.locals[k].__str__())
             else:
                 print(i.__str__())
 

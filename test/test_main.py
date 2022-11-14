@@ -38,6 +38,10 @@ class Test(TestCase):
         code = main("../sample_input/for.swift")
         self.assertEqual(" ", code, "for")
 
+    def test_for_in_func(self):
+        code = main("../sample_input/for_in_func.swift")
+        self.assertEqual(" ", code, "for_in_func")
+
     def test_func(self):
         code = main("../sample_input/func.swift")
         self.assertEqual(" ", code, "func")

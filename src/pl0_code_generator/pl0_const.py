@@ -67,10 +67,11 @@ class Pl0Const:
         raise NotImplementedError("Method not yet implemented.")
 
 
+# This class is used to store information about a symbol in table
 class SymbolRecord:
 
     def __init__(self, name, symbol_type, const=False, level=0, address=3, size=0,
-                 params=None, return_type=None, param=False, ):
+                 params=None, return_type=None, param=False, locals_vars=None):
         """
         This function initializes the symbol record
 
@@ -95,6 +96,7 @@ class SymbolRecord:
         if self.type == "func":
             self.params = params
             self.return_type = return_type
+            self.locals = locals_vars
 
     def __str__(self):
         ret_val = ""
