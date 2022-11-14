@@ -17,7 +17,12 @@ TODO JT debug pravidel gramatiky
 
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
 # the cfg is ambigous, therefore precende must be defined
-precedence = (('left', 'plus', 'minus'), ('left', 'multiply', 'divide'))
+precedence = (
+    ('nonassoc','lt','gt','le','ge','equals_equals'),
+    ('left', 'plus', 'minus','var','let'),
+    ('left', 'multiply', 'divide'),
+    ('right','uminus'),
+)
 
 
 # entry point of program, the 'root' of the tree
@@ -33,17 +38,41 @@ def p_program(p):
 def p_dekl_list(p):
     """
     dekl_list : dekl
-              | expression
+              | expression semicolon
+              | var_modification semicolon
+              | var_modification semicolon dekl_list
               | dekl dekl_list
               | block
-              | empty
 
     """
-    children = [p[1]]
+    n = len(p)
+    #block or single declaration
+    if n == 2:
+        p[0] = make_node('declaration',[p[1]])
+    #modification of existing variable
+    elif n == 4:
+        p[0] = make_node('var_modification',[p[1],p[3]])
+    #expression, modification or declaration list
+    elif n == 3:
+        #expression or modification
+        if p[2] == ";":
+            p[0] = make_node('statement',[p[1]])
+        #declaration list
+        else:
+            p[0] = make_node('declaration_list',[p[1],p[2]])
 
-    if len(p) == 3:
-        children.append(p[2])
-    p[0] = make_node('declaration', children)
+#modification of existing variable
+def p_var_modification(p):
+    """
+    var_modification : id sub expression
+                     | id add expression
+                     | id mulby expression
+                     | id divby expression
+                     | id equals expression
+    """
+
+    p[0] = make_node("var_modification",[p[1],p[2],p[3]])
+
 
 
 # declaration statement
@@ -114,14 +143,14 @@ def p_term(p):
 def p_factor(p):
     """
     factor : lparent expression rparent
-    | minus expression
+    | minus expression %prec uminus
     | val
     | call
     """
     if len(p) == 4:
         p[0] = make_node('expression_in_parent', [p[2]])
     elif len(p) == 3:
-        p[0] = make_node('unary_minus', [-p[1]])
+        p[0] = make_node('unary_minus', [p[1],p[2]])
     elif len(p) == 2:
         p[0] = make_node('factor_expression', [p[1]])
 
@@ -136,13 +165,9 @@ def p_empty(p):
 # value contains id of called function and function arguments
 def p_call(p):
     """
-    call : id lparent arguments rparent semicolon
-         | id lparent rparent semicolon
+    call : id lparent arguments rparent
     """
-
-    p[0] = make_node('function_call', [p[1]])
-    if len(p) == 6:
-        make_node(p[0], [p[3]])
+    p[0] = make_node('function_call', [p[1],p[3]])
 
 
 # generic rule for value, that is integer or identifier
@@ -181,21 +206,22 @@ def p_params_var(p):
     params_var : id ddot dtype comma params_var
                | id ddot dtype
     """
-    p[0] = make_node('parameters_declaration', [p[1], p[3]])
     if len(p) == 6:
-        make_node(p[0], [p[5]])
-
+        p[0] = make_node('parameters_declaration_list',[p[1],p[3],p[5]])
+    elif len(p) == 4:
+        p[0] = make_node('parameter_declaration',[p[1],p[3]])
 
 # function arguments rule, multiple values separated by comma
 def p_arguments(p):
     """
     arguments : val comma arguments
     |   val
+    | empty
     """
-    p[0] = make_node('arguments', [p[1]])
     if len(p) == 4:
-        make_node(p[0], [p[3]])
-
+        p[0] = make_node('arguments_list',[p[1],p[3]])
+    elif len(p) == 2:
+        p[0] = make_node('argument',[p[1]])
 
 # compound block rule, ie {<block>}
 def p_comp_block(p):
@@ -213,14 +239,25 @@ def p_block(p):
         | cond_block dekl_list
         | let var_dekl dekl_list
         | var var_dekl dekl_list
+        | var_modification semicolon dekl_list
+        | expression semicolon dekl_list
         | return expression semicolon
+        | loop_block
+        | cond_block
+        | expression semicolon
+        | var_modification semicolon
     """
+    n = len(p)
     if p[1] == 'return':
         p[0] = make_node('return_statement', [p[2]])
-    elif len(p) == 3:
+    elif n == 3 and p[2] != ';':
         p[0] = make_node('block', [p[1], p[2]])
-    elif len(p) == 4:
-        p[0] = make_node('block_var_dekl', [p[2], p[3]])
+    elif n == 4 and p[1] == "var" or p[1] == "let":
+        p[0] = make_node('block_var_dekl', [p[1],p[2], p[3]])
+    elif n == 4:
+        p[0] = make_node('expression',[p[1],p[3]])
+    elif n == 2 or (n == 3 and p[2] == ';'):
+        p[0] = make_node('block_statement',[p[1]])
 
 
 # loop statement, only for cycle for now, will be expanded in future
@@ -246,14 +283,12 @@ def p_cond_block(p):
 # loop variable responsible for loop behavior
 def p_loop_var(p):
     """
-    loop_var : let var_dekl
-    | var var_dekl
-
-    | id
+    loop_var : var var_dekl
+    | id semicolon
     """
-    if len(p) == 3:
-        p[0] = make_node('loop_var', [p[2]])
-    elif len(p) == 2:
+    if p[2] != ";":
+        p[0] = make_node('loop_var', [p[1],p[2]])
+    else:
         p[0] = make_node('loop_var', [p[1]])
 
 

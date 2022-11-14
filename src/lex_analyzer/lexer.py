@@ -14,7 +14,7 @@ keywords = (
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal'
+    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby','uminus'
 )
 
 reserved_set = set(tokens)
@@ -23,7 +23,7 @@ reserved_map = {}
 for r in tokens:
     reserved_map[r.lower()] = r
 
-
+#TODO low prio problem - .* sezere vsechno od //
 def t_comment(t):
     r'//.*'
     t.lexer.lineno += t.value.count('\n')
@@ -100,6 +100,9 @@ t_equals = r'='
 t_equals_equals = r'=='
 t_add = r'\+='
 t_sub = r'\-='
+t_uminus = r'\-'
+t_divby = r'\/='
+t_mulby = r'\*='
 t_plus = r'\+'
 t_minus = r'\-'
 t_divide = r'\/'

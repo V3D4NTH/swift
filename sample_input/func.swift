@@ -1,6 +1,16 @@
-func main(a: Int,c: Int,x: Int) -> Int {
-    var a:Int = 5;
-    var y: Int = a+c;
-    return 31;
+let a : Int = 5 * main();
+let b : Int = 42;
+
+func main() -> Int {
+    let x: Int = 42;
+    return x;
 }
-main(1,2,3);
+
+func main2() -> Int{
+    return 52;
+}
+
+
+
+main();
+

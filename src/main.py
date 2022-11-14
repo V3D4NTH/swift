@@ -22,6 +22,7 @@ def main(input_file_name: str):
     y = yy.yacc(module=syntax, debug=True)
     dst = y.parse(code)
 
+
     # with open("../output/tokens.txt", mode="w") as f:
     #     sys.stdout = f
     #     ply.lex.runmain(lexer, code)
@@ -32,15 +33,15 @@ def main(input_file_name: str):
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
 
     # Generating the code for the PL/0 compiler.
-    generated_code = gen.Pl0(dst, table_of_symbols)
-    generated_code.generate_code(sub_tree=generated_code.clear_tree(generated_code.ast.iter_prepostorder()))
+    #generated_code = gen.Pl0(dst, table_of_symbols)
+    #generated_code.generate_code(sub_tree=generated_code.clear_tree(generated_code.ast.iter_prepostorder()))
     # It prints the symbol table and the generated code.
-    generated_code.print_symbol_table()
+    #generated_code.print_symbol_table()
     print("----------generated code------------")
-    generated_code.print_code()
+    #generated_code.print_code()
     print("------------------------------------")
     return ""
 
 
 if __name__ == '__main__':
-    main("../sample_input/operation.swift")
+    main("../sample_input/program.swift")
