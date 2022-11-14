@@ -15,6 +15,7 @@ def main(input_file_name: str):
         code = f.read()
     print("input_code:")
     print(code)
+    code = code.replace("\n", " ")
     # Parsing the code_input.
     lexer = ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=True)
