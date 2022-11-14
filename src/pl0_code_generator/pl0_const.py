@@ -17,7 +17,17 @@ class Pl0Const:
         self.types = [int]
 
         self.expressions = {"expression_sum": self.gen_opr_add, "expression_minus": self.gen_opr_sub,
-                            "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div}
+                            "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div,
+                            "expression_term": self.gen_term}
+
+    def gen_term(self, const1, const2):
+        """
+        It adds two numbers.
+
+        :param const1: The first constant to add
+        :param const2: The second constant to add to the first
+        """
+        raise NotImplementedError("Method not yet implemented.")
 
     def gen_opr_add(self, const1, const2):
         """
@@ -59,7 +69,7 @@ class Pl0Const:
 
 class SymbolRecord:
 
-    def __init__(self, name, symbol_type, const=False, level=0, address=0, size=0,
+    def __init__(self, name, symbol_type, const=False, level=0, address=3, size=0,
                  params=None, return_type=None, param=False, ):
         """
         This function initializes the symbol record
@@ -87,21 +97,21 @@ class SymbolRecord:
             self.return_type = return_type
 
     def __str__(self):
-        print("--------record------")
-        print(self.id, "\t|", "id")
-        print(self.name, "\t\t\t\t|", "name")
-        print(self.type, "\t\t\t|", "symbol_type")
-        print(self.const, "\t\t\t|", "const")
-        print(self.level, "\t\t\t\t|", "level")
-        print(self.address, "\t\t\t\t|", "address")
-        print(self.size, "\t\t\t\t|", "size")
+        ret_val = ""
+        ret_val += "--------record------\n"
+        ret_val += (str(self.id) + "\t|" + "id\n")
+        ret_val += (str(self.name) + "\t\t\t\t|" + "name\n")
+        ret_val += (str(self.type) + "\t\t\t|" + "symbol_type\n")
+        ret_val += (str(self.const) + "\t\t\t|" + "const\n")
+        ret_val += (str(self.level) + "\t\t\t\t|" + "level\n")
+        ret_val += (str(self.address) + "\t\t\t\t|" + "address\n")
+        ret_val += (str(self.size) + "\t\t\t\t|" + "size\n")
         if self.type == "func":
-            for i in self.params:
-                i.__str__()
-            print(self.return_type, "\t\t\t\t|", "return_type")
+            ret_val += (str(self.return_type) + "\t\t\t\t|" + "return_type\n")
         if self.param:
-            print(self.param, "\t\t\t\t|", "param")
-        print("--------------------")
+            ret_val += (str(self.param) + "\t\t\t\t|" + "param\n")
+        ret_val += "--------------------\n"
+        return ret_val
 
 
 # > The `Inst` class is an enumeration of the instructions that the PL/0 compiler will generate

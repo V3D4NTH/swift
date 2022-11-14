@@ -1,7 +1,7 @@
 #  date: 11. 11. 2022
 #  author: Daniel Schnurpfeil
 #
-from src.pl0_code_generator.const import Inst as t, Op as o
+from src.pl0_code_generator.pl0_const import Inst as t, Op as o
 
 
 def inst(instruction: t):

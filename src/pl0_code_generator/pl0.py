@@ -4,7 +4,7 @@
 
 from ete3 import Tree
 
-from src.pl0_code_generator.const import Inst as t, Op as o, SymbolRecord, Pl0Const
+from src.pl0_code_generator.pl0_const import Inst as t, Op as o, SymbolRecord, Pl0Const
 from src.pl0_code_generator.pl0_utils import inst, op
 
 
@@ -21,9 +21,9 @@ class Pl0(Pl0Const):
         super().__init__()
         self.code = []
         self.ast = abstract_syntax_tree
-        self.stck = []
-        self.symbol_table = []
+        self.symbol_table = {}
         self.generate_table_of_symbols(symbols=self.ast.get_leaves())
+        self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()))
 
     def generate_instruction(self, inst_name, param1, param2):
         """
@@ -46,7 +46,13 @@ class Pl0(Pl0Const):
         """
         It prints the symbol table
         """
-        [i.__str__() for i in self.symbol_table]
+        for i in self.symbol_table.values():
+            if i.type == "func":
+                print(i.__str__())
+                for j in i.params:
+                    print(i.params[j].__str__())
+            else:
+                print(i.__str__())
 
     def return_code(self) -> str:
         """
@@ -65,24 +71,41 @@ class Pl0(Pl0Const):
         symbols = symbols
         level = level
         index = 0
+        address = 3
         while index < len(symbols):
             ancestor = symbols[index].get_ancestors()[0]
             if ancestor.name == "function_signature":
-                params = []
-                for i in symbols[index].get_sisters()[0].children:
+                if symbols[index].name in self.symbol_table.keys():
+                    raise Exception("Duplicate symbol:", symbols[index].name, "in", self.symbol_table.keys())
+                params = {}
+                for index, i in enumerate(symbols[index].get_sisters()[0].children):
                     id_and_type = i.get_leaf_names()
-                    params.append(SymbolRecord(id_and_type[0], id_and_type[1], param=True, level=level))
-                self.symbol_table.append(SymbolRecord(symbols[index].name, "func", params=params, level=level,
-                                                      return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
+                    if id_and_type[0] in params.keys():
+                        raise Exception("Duplicate symbol:", id_and_type[0], "in", params.keys())
+                    params[id_and_type[0]] = (SymbolRecord(id_and_type[0], id_and_type[1], param=True, level=level,
+                                                           address=address))
+                    address += 1
+                self.symbol_table[symbols[index].name] = (
+                    SymbolRecord(symbols[index].name, "func", params=params, level=level,
+                                 address=address,
+                                 return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
+                address += 1
                 func_body = symbols[index].get_sisters()[2].get_leaves()
+                # shifting index to skip duplicates
                 index += len(func_body)
-                self.generate_table_of_symbols(level=level+1, symbols=func_body)
+                # recursive call
+                self.generate_table_of_symbols(level=level + 1, symbols=func_body)
             if ancestor.name == "var_declaration_expression":
-                self.symbol_table.append(SymbolRecord(symbols[index].name,
-                                                      symbol_type=symbols[index].get_sisters()[0].children[0].name,
-                                                      level=level))
+                if symbols[index].name in self.symbol_table.keys():
+                    raise Exception("Duplicate symbol:", symbols[index].name, "in", self.symbol_table.keys())
+                self.symbol_table[symbols[index].name] = (SymbolRecord(symbols[index].name,
+                                                                       symbol_type=
+                                                                       symbols[index].get_sisters()[0].children[0].name,
+                                                                       level=level,
+                                                                       address=address))
+                address += 1
                 if ancestor.get_sisters()[0].name == "let":
-                    self.symbol_table[-1].const = True
+                    self.symbol_table[symbols[index].name].const = True
             index += 1
 
     def gen_const(self, const):
@@ -91,7 +114,8 @@ class Pl0(Pl0Const):
 
         :param const: The constant to be generated
         """
-        self.generate_instruction(inst(t.lit), 0, const)
+        if type(const) == int:
+            self.generate_instruction(inst(t.lit), 0, const)
 
     def gen_opr(self, const1, operator: o, const2):
         """
@@ -102,35 +126,73 @@ class Pl0(Pl0Const):
         :type operator: o
         :param const2: The second constant to be used in the operation
         """
-        self.gen_const(const1)
-        self.gen_const(const2)
+        if const1:
+            self.gen_const(const1)
+        if const2:
+            self.gen_const(const2)
         self.generate_instruction(inst(t.opr), 0, str(operator))
 
-    def gen_opr_add(self, const1, const2):
+    def gen_opr_add(self, const1=None, const2=None):
         self.gen_opr(const1, op(o.add), const2)
 
-    def gen_opr_sub(self, const1, const2):
+    def gen_opr_sub(self, const1=None, const2=None):
         self.gen_opr(const1, op(o.sub), const2)
 
-    def gen_opr_mul(self, const1, const2):
+    def gen_opr_mul(self, const1=None, const2=None):
         self.gen_opr(const1, op(o.mul), const2)
 
-    def gen_opr_div(self, const1, const2):
+    def gen_opr_div(self, const1=None, const2=None):
         self.gen_opr(const1, op(o.div), const2)
+
+    def gen_term(self, const1=None, const2=None):
+        self.gen_const(const1)
 
     def gen(self, something):
         # dummy method
         pass
 
-    def generate_code(self):
-        for i in self.ast.iter_prepostorder():
+    def clear_tree(self, tree_iter_generator):
+        sub_tree = []
+        for i in tree_iter_generator:
             if not i[0]:
-                print(i[1].name)
-                if i[1].name in self.expressions:
-                    leaves = i[1].get_leaf_names()
-                    self.expressions[i[1].name](leaves[0], leaves[1])
-                if i[1].name in self.symbol_table:
-                    pass
+                sub_tree.append(i[1])
+        return sub_tree
+
+    def generate_code(self, sub_tree=None):
+        sub_tree = list(sub_tree)
+        index = 0
+        while index < len(sub_tree):
+            if sub_tree[index].name in self.expressions:
+                leaves = sub_tree[index].get_leaf_names()
+                if leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
+                    self.expressions[sub_tree[index].name]()
+                    index += 2
+                elif leaves[0] in self.symbol_table.keys():
+                    self.gen_load_symbol(self.symbol_table[leaves[0]])
+                    self.expressions[sub_tree[index].name](leaves[1])
+                    index += 1
+                elif leaves[1] in self.symbol_table.keys():
+                    self.gen_load_symbol(self.symbol_table[leaves[1]])
+                    self.expressions[sub_tree[index].name](leaves[0])
+                    index += 1
+                else:
+                    self.expressions[sub_tree[index].name](leaves[0], leaves[1])
+                    index += 2
+            if sub_tree[index].name == "var_declaration_expression":
+                self.generate_instruction(inst(t.int), 0, 4)
+                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+                # shifting index to skip duplicates
+                # recursive call
+                self.generate_code(sub_tree=sub_sub_tree)
+                self.store_var(self.symbol_table[sub_tree[index].children[0].name])
+                index += len(sub_sub_tree)
+            index += 1
+
+    def store_var(self, var: SymbolRecord):
+        self.generate_instruction(inst(t.sto), var.level, var.address)
+
+    def gen_load_symbol(self, symbol: SymbolRecord):
+        self.generate_instruction(inst(t.lod), symbol.level, symbol.address)
 
     def gen_if_else(self, cond1, operator: o, cond2, statement_true, statement_false):
         self.gen_opr(cond1, operator, cond2)
