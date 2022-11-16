@@ -31,7 +31,6 @@ def main(input_file_name: str):
     # Generating the code for the PL/0 compiler.
     generated_code = gen.Pl0(dst, table_of_symbols)
     generated_code.print_symbol_table()
-    generated_code.generate_code(sub_tree=generated_code.clear_tree(generated_code.ast.iter_prepostorder()))
     # It prints the symbol table and the generated code.
     print("----------generated code------------")
     generated_code.print_code()

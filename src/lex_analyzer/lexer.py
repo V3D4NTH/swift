@@ -89,11 +89,6 @@ def t_bool(t):
 
 # tokeny popsane reg. vyrazy
 
-# asi todo
-# t_TIMES_EQUAL = r'\*='
-# t_DIV_EQUAL = r'/='
-# t_MOD_EQUAL = r'%='
-
 
 # Defining the tokens that the lexer will recognize.
 t_equals = r'='

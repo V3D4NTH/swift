@@ -21,9 +21,28 @@ class Pl0Const:
                             "expression_term": self.gen_term}
 
         self.var_modifications = {"-=": self.gen_sub, "+=": self.gen_add, "*=": self.gen_mulby,
-                                  "/=": self.gen_divby, "=": self.gen_equals,
+                                  "/=": self.gen_divby, "=": self.gen_equals}
 
-        }
+        self.cond_expressions = {"<": self.gen_lesser, "!=": self.gen_not_equal, "<=": self.gen_lesser_equals,
+                                 ">": self.gen_greater, ">=": self.gen_greater_equals, "==": self.gen_dos_equals, }
+
+    def gen_lesser(self):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_not_equal(self):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_lesser_equals(self):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_greater(self):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_greater_equals(self):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_dos_equals(self):
+        raise NotImplementedError("Method not yet implemented.")
 
     def gen_sub(self, operator):
         raise NotImplementedError("Method not yet implemented.")
