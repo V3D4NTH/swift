@@ -44,12 +44,13 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
             params = {}
 
             ids_and_types = symbols[index].get_sisters()[0].get_leaf_names()
-            for i in range(0, len(ids_and_types), 2):
-                if ids_and_types[i] in params.keys():
-                    raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
-                params[ids_and_types[i]] = (SymbolRecord(ids_and_types[i], ids_and_types[i+1], param=True, level=level,
-                                                       address=address))
-                address += 1
+            if len(ids_and_types) > 1:
+                for i in range(0, len(ids_and_types), 2):
+                    if ids_and_types[i] in params.keys():
+                        raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
+                    params[ids_and_types[i]] = (SymbolRecord(ids_and_types[i], ids_and_types[i+1], param=True, level=level,
+                                                           address=address))
+                    address += 1
             func_name = symbols[index].name
             symbol_table[func_name] = (
                 SymbolRecord(symbols[index].name, "func", params=params, level=level,
