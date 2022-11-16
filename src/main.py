@@ -1,7 +1,6 @@
 #  date: 8. 11. 2022
 #  authors: Daniel Schnurpfeil,  Jiri Trefil
 #
-import sys
 
 import ply.lex
 import ply.yacc as yy
@@ -18,16 +17,10 @@ def main(input_file_name: str):
     print(code)
     code = code.replace("\n", " ")
     # Parsing the code_input.
-    lexer = ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=True)
     dst = y.parse(code)
 
-
-    # with open("../output/tokens.txt", mode="w") as f:
-    #     sys.stdout = f
-    #     ply.lex.runmain(lexer, code)
-    # sys.stdout = sys.__stdout__
-    # print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
+    print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
     print(dst)
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())

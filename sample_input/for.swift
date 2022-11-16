@@ -1,6 +1,4 @@
-for (let j : Int = 52; j < 32; j += 1;){
-    var a:Int = 5;
-    var y: Int = a+c;
-    return 42;
+var someResult: Int = 0;
+for(var l : Int = 1; l < 20; l+= 1;) {
+    someResult -=  l;
 }
-return 10;

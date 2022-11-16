@@ -105,8 +105,19 @@ class Pl0(Pl0Const):
     def gen_term(self, const1=None, const2=None):
         self.gen_const(const1)
 
-    def gen(self, something):
-        # dummy method
+    def gen_sub(self, operator):
+        self.generate_instruction(inst(t.opr), 0, op(o.sub))
+
+    def gen_add(self, operator):
+        self.generate_instruction(inst(t.opr), 0, op(o.add))
+
+    def gen_mulby(self, operator):
+        self.generate_instruction(inst(t.opr), 0, op(o.mul))
+
+    def gen_divby(self, operator):
+        self.generate_instruction(inst(t.opr), 0, op(o.div))
+
+    def gen_equals(self, operator):
         pass
 
     def clear_tree(self, tree_iter_generator):
@@ -127,7 +138,9 @@ class Pl0(Pl0Const):
         while index < len(sub_tree):
             if sub_tree[index].name in self.expressions:
                 leaves = sub_tree[index].get_leaf_names()
-                if leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
+                if sub_tree[index].name == "expression_term":
+                    self.expressions[sub_tree[index].name](leaves[0])
+                elif leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
                     self.expressions[sub_tree[index].name]()
                     index += 2
                 elif leaves[0] in self.symbol_table.keys():
@@ -141,7 +154,7 @@ class Pl0(Pl0Const):
                 else:
                     self.expressions[sub_tree[index].name](leaves[0], leaves[1])
                     index += 2
-            if sub_tree[index].name == "var_declaration_expression":
+            elif sub_tree[index].name == "var_declaration_expression":
                 self.generate_instruction(inst(t.int), 0, 4)
                 sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
                 # shifting index to skip duplicates
@@ -149,6 +162,24 @@ class Pl0(Pl0Const):
                 self.generate_code(sub_tree=sub_sub_tree)
                 self.store_var(self.symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
+            elif sub_tree[index].name == "var_modification":
+                symbol_name = sub_tree[index].children[0].name
+                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+                oper_and_equals = sub_tree[index].children[1]
+                # shifting index to skip duplicates
+                # recursive call
+                self.generate_code(sub_tree=sub_sub_tree)
+                index += len(sub_sub_tree)
+                if oper_and_equals.name != "=":
+                    self.gen_load_symbol(self.symbol_table[symbol_name])
+                # shifting index to skip duplicates
+                # recursive call
+                self.generate_code(sub_tree=oper_and_equals)
+                index += 1
+                self.store_var(self.symbol_table[symbol_name])
+
+            elif sub_tree[index].name in self.var_modifications:
+                self.var_modifications[sub_tree[index].name](sub_tree[index].name)
             index += 1
 
     def store_var(self, var: SymbolRecord):

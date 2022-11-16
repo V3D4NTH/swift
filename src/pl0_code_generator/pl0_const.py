@@ -20,7 +20,27 @@ class Pl0Const:
                             "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div,
                             "expression_term": self.gen_term}
 
-    def gen_term(self, const1, const2):
+        self.var_modifications = {"-=": self.gen_sub, "+=": self.gen_add, "*=": self.gen_mulby,
+                                  "/=": self.gen_divby, "=": self.gen_equals,
+
+        }
+
+    def gen_sub(self, operator):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_add(self, operator):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_mulby(self, operator):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_divby(self, operator):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_equals(self, operator):
+        raise NotImplementedError("Method not yet implemented.")
+
+    def gen_term(self, operator):
         """
         It adds two numbers.
 
