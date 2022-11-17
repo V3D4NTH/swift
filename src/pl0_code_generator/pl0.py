@@ -157,7 +157,7 @@ class Pl0(Pl0Const):
                     self.gen_load_symbol(self.symbol_table[symbol_name])
                 # shifting index to skip duplicates
                 # recursive call
-                self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+                self.generate_code(sub_tree=oper_and_equals, level=level + 1)
                 index += 1
                 self.store_var(self.symbol_table[symbol_name])
             # ################################################################################
