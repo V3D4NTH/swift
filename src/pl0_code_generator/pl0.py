@@ -114,6 +114,7 @@ class Pl0(Pl0Const):
         index = 0
         while index < len(sub_tree):
             # ################################################################################
+            #  generates expression_term statements
             # ################################################################################
             if sub_tree[index].name in self.expressions:
                 leaves = sub_tree[index].get_leaf_names()
@@ -134,6 +135,7 @@ class Pl0(Pl0Const):
                     self.expressions[sub_tree[index].name](leaves[0], leaves[1])
                     index += 2
             # ################################################################################
+            #  generates variable declaration statements
             # ################################################################################
             elif sub_tree[index].name == "var_declaration_expression":
                 self.generate_instruction(inst(t.int), 0, 4)
@@ -144,6 +146,10 @@ class Pl0(Pl0Const):
                 self.store_var(self.symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
             # ################################################################################
+            #  generates variable modification statements
+            # ################################################################################
+            elif sub_tree[index].name in self.var_modifications:
+                self.var_modifications[sub_tree[index].name](sub_tree[index].name)
             # ################################################################################
             elif sub_tree[index].name == "var_modification":
                 symbol_name = sub_tree[index].children[0].name
@@ -161,6 +167,7 @@ class Pl0(Pl0Const):
                 index += 1
                 self.store_var(self.symbol_table[symbol_name])
             # ################################################################################
+            #  generates if (else) statements
             # ################################################################################
             elif sub_tree[index].name == "if_stmt" or sub_tree[index].name == "if_else_stmt":
                 condition = sub_tree[index].children[0]
@@ -206,8 +213,7 @@ class Pl0(Pl0Const):
                             i[2] = len(self.code)
             # ################################################################################
             # ################################################################################
-            elif sub_tree[index].name in self.var_modifications:
-                self.var_modifications[sub_tree[index].name](sub_tree[index].name)
+
             index += 1
 
     def store_var(self, var: SymbolRecord):

@@ -87,7 +87,29 @@ class Test(TestCase):
 
     def test_if_if_else(self):
         code = main("../sample_input/if_if_else.swift")
-        self.assertEqual(" ", code, "if_if_else")
+        self.assertEqual("""0 INT 0 4
+1 LIT 0 0
+2 STO 0 3
+3 LIT 0 52
+4 LIT 0 43
+5 OPR 0 10
+6 JMC 0 20
+7 LIT 0 100
+8 LIT 0 43
+9 OPR 0 10
+10 JMC 0 15
+11 LIT 0 32
+12 LOD 0 3
+13 OPR 0 4
+14 STO 0 3
+15 JMP 0 20
+16 LIT 0 4
+17 LOD 0 3
+18 OPR 0 3
+19 STO 0 3
+20 RET 0 0
+""", code, "if_if_else")
+
     #
     # def test_for(self):
     #     code = main("../sample_input/for.swift")
