@@ -72,7 +72,7 @@ class Test(TestCase):
 3 LIT 0 52
 4 LIT 0 43
 5 OPR 0 10
-6 JMC 0 16
+6 JMC 0 12
 7 LIT 0 32
 8 LOD 0 3
 9 OPR 0 4
@@ -88,12 +88,12 @@ class Test(TestCase):
     def test_if_if_else(self):
         code = main("../sample_input/if_if_else.swift")
         self.assertEqual("""0 INT 0 4
-1 LIT 0 0
+1 LIT 0 1
 2 STO 0 3
 3 LIT 0 52
 4 LIT 0 43
 5 OPR 0 10
-6 JMC 0 20
+6 JMC 0 16
 7 LIT 0 100
 8 LIT 0 43
 9 OPR 0 10

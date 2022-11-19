@@ -196,6 +196,12 @@ class Pl0(Pl0Const):
                     self.generate_instruction(inst(t.jmc), 0, x)
                     self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
                     index += len(sub_sub_tree)
+                    for i in self.code:
+                        if i[2] == x:
+                            jmc_address = len(self.code)
+                            if block2 is not None:
+                                jmc_address += 1
+                            i[2] = jmc_address
                     if block2 is not None:
                         # block 2
                         sub_sub_tree = self.clear_tree(block2.children[0].iter_prepostorder())
@@ -208,9 +214,6 @@ class Pl0(Pl0Const):
                         for i in self.code:
                             if i[2] == y:
                                 i[2] = len(self.code)
-                    for i in self.code:
-                        if i[2] == x:
-                            i[2] = len(self.code)
             # ################################################################################
             # ################################################################################
 
