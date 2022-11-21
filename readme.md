@@ -11,11 +11,17 @@ School Project: **Not so Swift Language** compiler
 - parameters in func can be literal
 - return value
 - else branch
+- for (c like)
 -------
 todo
-- for
+- for defined in (https://docs.swift.org/swift-book/LanguageGuide/ControlFlow.html)
+
+for index in 1...5 { 
+
+some code 
+
+}
 - while
-- for (c like)
 - repeat while
 - ternary operator
 
