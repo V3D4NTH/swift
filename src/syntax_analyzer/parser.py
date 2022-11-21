@@ -51,7 +51,7 @@ def p_dekl_list(p):
         p[0] = make_node('declaration',[p[1]])
     #modification of existing variable
     elif n == 4:
-        p[0] = make_node('var_modification',[p[1],p[3]])
+        p[0] = make_node('var_modification_dekl',[p[1],p[3]])
     #expression, modification or declaration list
     elif n == 3:
         #expression or modification

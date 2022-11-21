@@ -22,6 +22,7 @@ class Pl0(Pl0Const):
         self.code = []
         self.ast = abstract_syntax_tree
         self.symbol_table = symbol_table
+        self.generate_instruction(inst(t.int), 0, 3)
         self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()))
         # end of code
         self.generate_instruction(inst(t.ret), 0, 0)
@@ -73,10 +74,51 @@ class Pl0(Pl0Const):
             code_string += (str(index) + " " + str(c[0]) + " " + str(c[1]) + " " + str(c[2]) + "\n")
         return code_string
 
+    def generate_code(self, sub_tree=None, level=0):
+        """
+        It generates code for the PL/0 compiler
+        :param sub_tree: The subtree to generate code for. If None, the whole tree is generated
+        :param level: The level of the current node in the tree, defaults to 0 (optional)
+        """
+        sub_tree = list(sub_tree)
+        index = 0
+        while index < len(sub_tree):
+            #  generates expression_term statements
+            if sub_tree[index].name in self.expressions:
+                # if sub_tree[index].children[0].name in self.expressions and sub_tree[index].name in self.expressions:
+                #     sub_sub_tree = self.clear_tree(sub_tree[index].children[0].iter_prepostorder())
+                #     # shifting index to skip duplicates
+                #     # recursive call
+                #     self.generate_code(sub_tree=sub_sub_tree, level=level)
+                #     index += len(sub_sub_tree)
+                # else: todo
+                    index = self.gen_expression_term(sub_tree, index)
+            #  generates variable declaration statements
+            elif sub_tree[index].name == "var_declaration_expression":
+                self.generate_instruction(inst(t.int), 0, 1)
+                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+                # shifting index to skip duplicates
+                # recursive call
+                self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+                self.store_var(self.symbol_table[sub_tree[index].children[0].name])
+                index += len(sub_sub_tree)
+            #  generates variable modification statements
+            elif sub_tree[index].name in self.var_modifications:
+                self.var_modifications[sub_tree[index].name](sub_tree[index].name)
+
+            elif sub_tree[index].name == "var_modification":
+                index, level = self.gen_var_modification(sub_tree, index, level)
+            #  generates if (else) statements
+            elif sub_tree[index].name == "if_stmt" or sub_tree[index].name == "if_else_stmt":
+                index, level = self.gen_if_else(sub_tree, index, level)
+            elif sub_tree[index].name == "function_call":
+                pass
+            #  update index
+            index += 1
+
     def gen_const(self, const):
         """
         It generates a constant
-
         :param const: The constant to be generated
         """
         if type(const) == int:
@@ -85,7 +127,6 @@ class Pl0(Pl0Const):
     def gen_opr(self, const1, operator: o, const2):
         """
         It generates instructions for the operation of two constants
-
         :param const1: The first constant to be used in the operation
         :param operator: o = enum('+', '-', '*', '/', '<', '>', '=', '<=', '>=', '<>', 'and', 'or', 'not', 'neg')
         :type operator: o
@@ -100,7 +141,6 @@ class Pl0(Pl0Const):
     def clear_tree(self, tree_iter_generator):
         """
         It takes a generator that yields tree iterators, and clears the tree of all rows
-
         :param tree_iter_generator: A generator that returns a Gtk.TreeIter for each row in the tree
         """
         sub_tree = []
@@ -109,120 +149,139 @@ class Pl0(Pl0Const):
                 sub_tree.append(i[1])
         return sub_tree
 
-    def generate_code(self, sub_tree=None, level=0):
-        sub_tree = list(sub_tree)
-        index = 0
-        while index < len(sub_tree):
-            # ################################################################################
-            #  generates expression_term statements
-            # ################################################################################
-            if sub_tree[index].name in self.expressions:
-                leaves = sub_tree[index].get_leaf_names()
-                if sub_tree[index].name == "expression_term":
-                    self.expressions[sub_tree[index].name](leaves[0])
-                elif leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
-                    self.expressions[sub_tree[index].name]()
-                    index += 2
-                elif leaves[0] in self.symbol_table.keys():
-                    self.gen_load_symbol(self.symbol_table[leaves[0]])
-                    self.expressions[sub_tree[index].name](leaves[1])
-                    index += 1
-                elif leaves[1] in self.symbol_table.keys():
-                    self.gen_load_symbol(self.symbol_table[leaves[1]])
-                    self.expressions[sub_tree[index].name](leaves[0])
-                    index += 1
-                else:
-                    self.expressions[sub_tree[index].name](leaves[0], leaves[1])
-                    index += 2
-            # ################################################################################
-            #  generates variable declaration statements
-            # ################################################################################
-            elif sub_tree[index].name == "var_declaration_expression":
-                self.generate_instruction(inst(t.int), 0, 4)
-                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
-                # shifting index to skip duplicates
-                # recursive call
-                self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                self.store_var(self.symbol_table[sub_tree[index].children[0].name])
-                index += len(sub_sub_tree)
-            # ################################################################################
-            #  generates variable modification statements
-            # ################################################################################
-            elif sub_tree[index].name in self.var_modifications:
-                self.var_modifications[sub_tree[index].name](sub_tree[index].name)
-            # ################################################################################
-            elif sub_tree[index].name == "var_modification":
-                symbol_name = sub_tree[index].children[0].name
-                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
-                oper_and_equals = sub_tree[index].children[1]
-                # shifting index to skip duplicates
-                # recursive call
-                self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                index += len(sub_sub_tree)
-                if oper_and_equals.name != "=":
-                    self.gen_load_symbol(self.symbol_table[symbol_name])
-                # shifting index to skip duplicates
-                # recursive call
-                self.generate_code(sub_tree=oper_and_equals, level=level + 1)
-                index += 1
-                self.store_var(self.symbol_table[symbol_name])
-            # ################################################################################
-            #  generates if (else) statements
-            # ################################################################################
-            elif sub_tree[index].name == "if_stmt" or sub_tree[index].name == "if_else_stmt":
-                condition = sub_tree[index].children[0]
-                block1 = sub_tree[index].children[1]
-                block2 = None
-                if sub_tree[index].name == "if_else_stmt":
-                    block2 = sub_tree[index].children[2]
-                if condition.children[1].get_leaf_names()[0] in self.cond_expressions:
-                    index += 2
-                    sub_sub_tree = self.clear_tree(condition.children[0].iter_prepostorder())
-                    # shifting index to skip duplicates
-                    # recursive call
-                    self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                    index += len(sub_sub_tree)
-                    sub_sub_tree = self.clear_tree(condition.children[2].iter_prepostorder())
-                    # shifting index to skip duplicates
-                    # recursive call
-                    self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                    index += len(sub_sub_tree)
-                    self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
-                    # block 1
-                    sub_sub_tree = self.clear_tree(block1.children[0].iter_prepostorder())
-                    # shifting index to skip duplicates
-                    # recursive call
-                    x = id("x" + str(level))
-                    self.generate_instruction(inst(t.jmc), 0, x)
-                    self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                    index += len(sub_sub_tree)
-                    for i in self.code:
-                        if i[2] == x:
-                            jmc_address = len(self.code)
-                            if block2 is not None:
-                                jmc_address += 1
-                            i[2] = jmc_address
-                    if block2 is not None:
-                        # block 2
-                        sub_sub_tree = self.clear_tree(block2.children[0].iter_prepostorder())
-                        # shifting index to skip duplicates
-                        # recursive call
-                        y = id("y" + str(level))
-                        self.generate_instruction(inst(t.jmp), 0, y)
-                        self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
-                        index += len(sub_sub_tree)
-                        for i in self.code:
-                            if i[2] == y:
-                                i[2] = len(self.code)
-            # ################################################################################
-            # ################################################################################
+    def gen_condition(self, condition, index, level):
+        """
+        It generates a condition
+        for a given index and level
 
+        :param condition: the condition to be generated
+        :param index: the index of the condition in the list of conditions
+        :param level: the level of indentation
+        """
+        index += 2
+        sub_sub_tree = self.clear_tree(condition.children[0].iter_prepostorder())
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+        index += len(sub_sub_tree)
+        sub_sub_tree = self.clear_tree(condition.children[2].iter_prepostorder())
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+        index += len(sub_sub_tree)
+        self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
+        return condition, index, level
+
+    def gen_expression_term(self, sub_tree, index):
+        """
+        It takes a tree and an index, and returns a list of tuples of the form (index, expression_term)
+
+        The index is the index of the expression_term in the tree
+
+        :param sub_tree: The sub-tree of the parse tree that we're currently working on
+        :param index: the index of the current node in the tree
+        """
+        leaves = sub_tree[index].get_leaf_names()
+        if sub_tree[index].name == "expression_term":
+            self.expressions[sub_tree[index].name](leaves[0])
+        elif leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
+            self.expressions[sub_tree[index].name]()
+            index += 2
+        elif leaves[0] in self.symbol_table.keys():
+            self.gen_load_symbol(self.symbol_table[leaves[0]])
+            self.expressions[sub_tree[index].name](leaves[1])
             index += 1
+        elif leaves[1] in self.symbol_table.keys():
+            self.gen_load_symbol(self.symbol_table[leaves[1]])
+            self.expressions[sub_tree[index].name](leaves[0])
+            index += 1
+        else:
+            self.expressions[sub_tree[index].name](leaves[0], leaves[1])
+            index += 2
+        return index
+
+    def gen_var_modification(self, sub_tree, index, level):
+        """
+        This function generates a variable modification statement
+
+        :param sub_tree: the subtree that we are currently working on
+        :param index: the index of the current node in the tree
+        :param level: the level of the tree we're currently at
+        """
+        symbol_name = sub_tree[index].children[0].name
+        sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+        oper_and_equals = sub_tree[index].children[1]
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+        index += len(sub_sub_tree)
+        if oper_and_equals.name != "=":
+            self.gen_load_symbol(self.symbol_table[symbol_name])
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=oper_and_equals, level=level + 1)
+        index += 1
+        self.store_var(self.symbol_table[symbol_name])
+        return index, level
+
+    def gen_if_else(self, sub_tree, index, level):
+        """
+        This function generates a if (else) statement
+        :param sub_tree: the subtree of the current node
+        :param index: the index of the current node in the tree
+        :param level: the level of the current node in the tree
+        """
+        condition = sub_tree[index].children[0]
+        block1 = sub_tree[index].children[1]
+        block2 = None
+        if sub_tree[index].name == "if_else_stmt":
+            block2 = sub_tree[index].children[2]
+        if condition.children[1].get_leaf_names()[0] in self.cond_expressions:
+            _, index, level = self.gen_condition(condition, index, level)
+            # block 1
+            sub_sub_tree = self.clear_tree(block1.children[0].iter_prepostorder())
+            # shifting index to skip duplicates
+            # recursive call
+            x = id("x" + str(level))
+            self.generate_instruction(inst(t.jmc), 0, x)
+            self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+            index += len(sub_sub_tree)
+            for i in self.code:
+                if i[2] == x:
+                    jmc_address = len(self.code)
+                    if block2 is not None:
+                        jmc_address += 1
+                    i[2] = jmc_address
+            if block2 is not None:
+                # block 2
+                sub_sub_tree = self.clear_tree(block2.children[0].iter_prepostorder())
+                # shifting index to skip duplicates
+                # recursive call
+                y = id("y" + str(level))
+                self.generate_instruction(inst(t.jmp), 0, y)
+                self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+                index += len(sub_sub_tree)
+                for i in self.code:
+                    if i[2] == y:
+                        i[2] = len(self.code)
+        return index, level
 
     def store_var(self, var: SymbolRecord):
+        """
+        Store a variable in the current scope.
+
+        :param var: The variable to store
+        :type var: SymbolRecord
+        """
         self.generate_instruction(inst(t.sto), var.level, var.address)
 
     def gen_load_symbol(self, symbol: SymbolRecord):
+        """
+        It generates the code to load a symbol from the symbol table
+
+        :param symbol: The symbol record for the symbol to be loaded
+        :type symbol: SymbolRecord
+        """
         self.generate_instruction(inst(t.lod), symbol.level, symbol.address)
 
     def gen_opr_add(self, const1=None, const2=None):
