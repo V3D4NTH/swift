@@ -85,14 +85,7 @@ class Pl0(Pl0Const):
         while index < len(sub_tree):
             #  generates expression_term statements
             if sub_tree[index].name in self.expressions:
-                # if sub_tree[index].children[0].name in self.expressions and sub_tree[index].name in self.expressions:
-                #     sub_sub_tree = self.clear_tree(sub_tree[index].children[0].iter_prepostorder())
-                #     # shifting index to skip duplicates
-                #     # recursive call
-                #     self.generate_code(sub_tree=sub_sub_tree, level=level)
-                #     index += len(sub_sub_tree)
-                # else: todo
-                    index = self.gen_expression_term(sub_tree, index)
+                index = self.gen_expression(sub_tree, index)
             #  generates variable declaration statements
             elif sub_tree[index].name == "var_declaration_expression":
                 self.generate_instruction(inst(t.int), 0, 1)
@@ -172,7 +165,7 @@ class Pl0(Pl0Const):
         self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
         return condition, index, level
 
-    def gen_expression_term(self, sub_tree, index):
+    def gen_expression(self, sub_tree, index):
         """
         It takes a tree and an index, and returns a list of tuples of the form (index, expression_term)
 
@@ -181,6 +174,7 @@ class Pl0(Pl0Const):
         :param sub_tree: The sub-tree of the parse tree that we're currently working on
         :param index: the index of the current node in the tree
         """
+        # todo here is bug
         leaves = sub_tree[index].get_leaf_names()
         if sub_tree[index].name == "expression_term":
             self.expressions[sub_tree[index].name](leaves[0])

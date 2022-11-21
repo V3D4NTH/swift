@@ -40,18 +40,7 @@ class Test(TestCase):
 
     def test_operators(self):
         code = main("../sample_input/operators.swift")
-        self.assertEqual("""0 INT 0 3
-1 INT 0 1
-2 LIT 0 40
-3 STO 0 3
-4 INT 0 1
-5 LIT 0 10
-6 LIT 0 20
-7 OPR 0 2
-8 LIT 0 10
-9 STO 0 4
-10 RET 0 0
-""", code, "operators")
+        self.assertEqual("", code, "operators")
 
     def test_if(self):
         code = main("../sample_input/if.swift")
