@@ -168,9 +168,9 @@ class Pl0(Pl0Const):
     def gen_expression(self, sub_tree, index):
         """
         It takes a tree and an index, and returns a list of tuples of the form (index, expression_term)
-
         The index is the index of the expression_term in the tree
 
+        :param level:
         :param sub_tree: The sub-tree of the parse tree that we're currently working on
         :param index: the index of the current node in the tree
         """
@@ -184,7 +184,7 @@ class Pl0(Pl0Const):
             for i in range(2, len(leaf_names)):
                 if leaf_names[i] in self.symbol_table.keys():
                     self.gen_load_symbol(self.symbol_table[leaf_names[i]])
-                parent = sub_tree[0].get_common_ancestor(sub_sub_tree, leaves[2])
+                parent = sub_tree[0].get_common_ancestor(sub_sub_tree, leaves[i])
                 self.expressions[parent.name](leaf_names[i])
             index += len(sub_tree)
 
