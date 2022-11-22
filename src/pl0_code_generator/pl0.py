@@ -174,23 +174,35 @@ class Pl0(Pl0Const):
         :param sub_tree: The sub-tree of the parse tree that we're currently working on
         :param index: the index of the current node in the tree
         """
-        # todo here is bug
-        leaves = sub_tree[index].get_leaf_names()
-        if sub_tree[index].name == "expression_term":
-            self.expressions[sub_tree[index].name](leaves[0])
-        elif leaves[0] in self.symbol_table.keys() and leaves[1] in self.symbol_table.keys():
+        leaf_names = sub_tree[index].get_leaf_names()
+        leaves = sub_tree[index].get_leaves()
+        if len(leaf_names) > 2:
+            sub_sub_tree = sub_tree[0].get_common_ancestor(leaves[0], leaves[1])
+            # shifting index to skip duplicates
+            # recursive call
+            index = self.gen_expression(sub_tree=self.clear_tree(sub_sub_tree.iter_prepostorder()), index=index)
+            for i in range(2, len(leaf_names)):
+                if leaf_names[i] in self.symbol_table.keys():
+                    self.gen_load_symbol(self.symbol_table[leaf_names[i]])
+                parent = sub_tree[0].get_common_ancestor(sub_sub_tree, leaves[2])
+                self.expressions[parent.name](leaf_names[i])
+            index += len(sub_tree)
+
+        elif sub_tree[index].name == "expression_term":
+            self.expressions[sub_tree[index].name](leaf_names[0])
+        elif leaf_names[0] in self.symbol_table.keys() and leaf_names[1] in self.symbol_table.keys():
             self.expressions[sub_tree[index].name]()
             index += 2
-        elif leaves[0] in self.symbol_table.keys():
-            self.gen_load_symbol(self.symbol_table[leaves[0]])
-            self.expressions[sub_tree[index].name](leaves[1])
+        elif leaf_names[0] in self.symbol_table.keys():
+            self.gen_load_symbol(self.symbol_table[leaf_names[0]])
+            self.expressions[sub_tree[index].name](leaf_names[1])
             index += 1
-        elif leaves[1] in self.symbol_table.keys():
-            self.gen_load_symbol(self.symbol_table[leaves[1]])
-            self.expressions[sub_tree[index].name](leaves[0])
+        elif leaf_names[1] in self.symbol_table.keys():
+            self.gen_load_symbol(self.symbol_table[leaf_names[1]])
+            self.expressions[sub_tree[index].name](leaf_names[0])
             index += 1
         else:
-            self.expressions[sub_tree[index].name](leaves[0], leaves[1])
+            self.expressions[sub_tree[index].name](leaf_names[0], leaf_names[1])
             index += 2
         return index
 
