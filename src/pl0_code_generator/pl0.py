@@ -293,6 +293,14 @@ class Pl0(Pl0Const):
         return index, level
 
     def generate_code_again(self, index, level, symbol_table, sub_tree):
+        """
+        It generates the code for the given node and its children
+
+        :param index: the index of the current node in the tree
+        :param level: the level of the current node in the tree
+        :param symbol_table: a dictionary that maps variable names to their values
+        :param sub_tree: the subtree of the AST that we are currently generating code for
+        """
         sub_sub_tree = self.clear_tree(sub_tree.iter_prepostorder())
         # shifting index to skip duplicates
         # recursive call
