@@ -22,6 +22,7 @@ class Pl0(Pl0Const):
         self.code = []
         self.ast = abstract_syntax_tree
         self.symbol_table = symbol_table
+        self.curr_func_name = None
 
     def generate_instructions(self):
         """
@@ -98,6 +99,7 @@ class Pl0(Pl0Const):
                 # shifting index to skip duplicates
                 # recursive call
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+                level -= 1
                 self.store_var(symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
             #  generates variable modification statements
@@ -111,19 +113,24 @@ class Pl0(Pl0Const):
                 index, level = self.gen_if_else(sub_tree, index, level, symbol_table=symbol_table)
             elif sub_tree[index].name == "function_call":
                 pass
-            elif sub_tree[index].name == "function_signature":
+            elif sub_tree[index].name == "return_statement":
+                # todo
                 print(sub_tree[index].get_ascii(attributes=["name", "dist", "label", "complex"]))
-                func_name = sub_tree[index].children[0].name
+            elif sub_tree[index].name == "function_signature":
+                self.curr_func_name = sub_tree[index].children[0].name
                 func_block = sub_tree[index].children[3].children[0]
                 level += 1
-                while func_block.children[1].children[0].name != "return_statement":
-                    sub_sub_tree = [func_block.children[0]] # todo bug
-                    # shifting index to skip duplicates
-                    # recursive call
-                    self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table[func_name].params)
-                    index += len(sub_sub_tree)
-                print(func_block.get_ascii(attributes=["name", "dist", "label", "complex"]))
-                # index = self.gen_params(func_params, index)
+                sub_sub_tree = self.clear_tree(func_block.iter_prepostorder())
+                index += len(self.clear_tree(sub_tree[index].iter_prepostorder())) - len(sub_sub_tree)
+                locals_and_params = {}
+                if symbol_table[self.curr_func_name].locals is not None:
+                    locals_and_params.update(symbol_table[self.curr_func_name].locals)
+                if symbol_table[self.curr_func_name].params is not None:
+                    locals_and_params.update(symbol_table[self.curr_func_name].params)
+                self.generate_code(sub_tree=sub_sub_tree, level=level,
+                                   symbol_table=locals_and_params)
+                index += len(sub_sub_tree)
+
             #  update index
             index += 1
 
@@ -174,11 +181,13 @@ class Pl0(Pl0Const):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+        level -= 1
         index += len(sub_sub_tree)
         sub_sub_tree = self.clear_tree(condition.children[2].iter_prepostorder())
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+        level -= 1
         index += len(sub_sub_tree)
         self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
         return condition, index, level
@@ -239,12 +248,14 @@ class Pl0(Pl0Const):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+        level -= 1
         index += len(sub_sub_tree)
         if oper_and_equals.name != "=":
             self.gen_load_symbol(symbol_table[symbol_name])
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=oper_and_equals, level=level + 1)
+        level -= 1
         index += 1
         self.store_var(symbol_table[symbol_name])
         return index, level
@@ -270,6 +281,7 @@ class Pl0(Pl0Const):
             x = id("x" + str(level))
             self.generate_instruction(inst(t.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+            level -= 1
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
@@ -285,6 +297,7 @@ class Pl0(Pl0Const):
                 y = id("y" + str(level))
                 self.generate_instruction(inst(t.jmp), 0, y)
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+                level -= 1
                 index += len(sub_sub_tree)
                 for i in self.code:
                     if i[2] == y:
