@@ -22,6 +22,11 @@ class Pl0(Pl0Const):
         self.code = []
         self.ast = abstract_syntax_tree
         self.symbol_table = symbol_table
+
+    def generate_instructions(self):
+        """
+        It generates instructions for the PL/0.
+        """
         self.generate_instruction(inst(t.int), 0, 3)
         self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()))
         # end of code
@@ -106,6 +111,20 @@ class Pl0(Pl0Const):
                 index, level = self.gen_if_else(sub_tree, index, level)
             elif sub_tree[index].name == "function_call":
                 pass
+            elif sub_tree[index].name == "function_signature":
+                print(sub_tree[index].get_ascii(attributes=["name", "dist", "label", "complex"]))
+                func_name = sub_tree[index].children[0].name
+                func_block = sub_tree[index].children[3]
+                level += 1
+                while func_block[1].children[0].name != "return_statement":
+                    sub_sub_tree = self.clear_tree(func_block.children[0].iter_prepostorder())
+                    # shifting index to skip duplicates
+                    # recursive call
+                    self.generate_code(sub_tree=sub_sub_tree, level=level + 1)
+                    index += len(sub_sub_tree)
+                #     todo
+                print(func_block.get_ascii(attributes=["name", "dist", "label", "complex"]))
+                # index = self.gen_params(func_params, index)
             #  update index
             index += 1
 

@@ -153,6 +153,6 @@ class Test(TestCase):
     #     code = main("../sample_input/func.swift")
     #     self.assertEqual(" ", code, "func")
     #
-    # def test_func_simple(self):
-    #     code = main("../sample_input/func_simple.swift")
-    #     self.assertEqual("", code, "func_simple")
+    def test_func_simple(self):
+        code = main("../sample_input/func_simple.swift")
+        self.assertEqual("", code, "func_simple")
