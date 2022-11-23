@@ -83,8 +83,9 @@ class Pl0(Pl0Const):
     def generate_code(self, sub_tree=None, level=0, symbol_table=None):
         """
         It generates code for the PL/0 compiler
-        :param sub_tree: The subtree to generate code for. If None, the whole tree is generated
-        :param level: The level of the current node in the tree, defaults to 0 (optional)
+        :param sub_tree: The current node of the tree that we are generating code for
+        :param level: the level of the current node in the tree, defaults to 0 (optional)
+        :param symbol_table: a dictionary that maps variable names to their values
         """
         sub_tree = list(sub_tree)
         index = 0
@@ -130,7 +131,6 @@ class Pl0(Pl0Const):
                 self.generate_code(sub_tree=sub_sub_tree, level=level,
                                    symbol_table=locals_and_params)
                 index += len(sub_sub_tree)
-
             #  update index
             index += 1
 
@@ -173,33 +173,23 @@ class Pl0(Pl0Const):
         for a given index and level
 
         :param condition: the condition to be generated
-        :param index: the index of the condition in the list of conditions
+        :param index: the index of the current node in the AST
         :param level: the level of indentation
+        :param symbol_table: a dictionary of the form {'var_name': 'var_type'}
         """
         index += 2
-        sub_sub_tree = self.clear_tree(condition.children[0].iter_prepostorder())
-        # shifting index to skip duplicates
-        # recursive call
-        self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-        level -= 1
-        index += len(sub_sub_tree)
-        sub_sub_tree = self.clear_tree(condition.children[2].iter_prepostorder())
-        # shifting index to skip duplicates
-        # recursive call
-        self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-        level -= 1
-        index += len(sub_sub_tree)
+        index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
+        index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
         self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
         return condition, index, level
 
     def gen_expression(self, sub_tree, index, symbol_table=None):
         """
-        It takes a tree and an index, and returns a list of tuples of the form (index, expression_term)
-        The index is the index of the expression_term in the tree
+        It takes a tree, an index, and a symbol table, and returns a string of Python code
 
-        :param level:
-        :param sub_tree: The sub-tree of the parse tree that we're currently working on
+        :param sub_tree: The subtree of the parse tree that we are currently working on
         :param index: the index of the current node in the tree
+        :param symbol_table: a dictionary of variables and their values
         """
         leaf_names = sub_tree[index].get_leaf_names()
         leaves = sub_tree[index].get_leaves()
@@ -236,20 +226,16 @@ class Pl0(Pl0Const):
 
     def gen_var_modification(self, sub_tree, index, level, symbol_table=None):
         """
-        This function generates a variable modification statement
+         This function generates a variable modification statement
 
-        :param sub_tree: the subtree that we are currently working on
+        :param sub_tree: The subtree of the AST that we are currently working on
         :param index: the index of the current node in the tree
-        :param level: the level of the tree we're currently at
+        :param level: the level of the current scope
+        :param symbol_table: a dictionary of the form {'var_name': 'var_type'}
         """
         symbol_name = sub_tree[index].children[0].name
-        sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
         oper_and_equals = sub_tree[index].children[1]
-        # shifting index to skip duplicates
-        # recursive call
-        self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-        level -= 1
-        index += len(sub_sub_tree)
+        index, level = self.generate_code_again(index, level, symbol_table, sub_tree[index].children[2])
         if oper_and_equals.name != "=":
             self.gen_load_symbol(symbol_table[symbol_name])
         # shifting index to skip duplicates
@@ -262,10 +248,12 @@ class Pl0(Pl0Const):
 
     def gen_if_else(self, sub_tree, index, level, symbol_table=None):
         """
-        This function generates a if (else) statement
-        :param sub_tree: the subtree of the current node
+        It generates the code for an if-else statement
+
+        :param sub_tree: The subtree of the AST that we are currently working on
         :param index: the index of the current node in the tree
-        :param level: the level of the current node in the tree
+        :param level: the level of indentation
+        :param symbol_table: The symbol table that is passed down from the parent node
         """
         condition = sub_tree[index].children[0]
         block1 = sub_tree[index].children[1]
@@ -302,6 +290,15 @@ class Pl0(Pl0Const):
                 for i in self.code:
                     if i[2] == y:
                         i[2] = len(self.code)
+        return index, level
+
+    def generate_code_again(self, index, level, symbol_table, sub_tree):
+        sub_sub_tree = self.clear_tree(sub_tree.iter_prepostorder())
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+        level -= 1
+        index += len(sub_sub_tree)
         return index, level
 
     def store_var(self, var: SymbolRecord):
