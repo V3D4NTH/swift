@@ -27,6 +27,20 @@ def make_node(node_name: str, children=None) -> Tree:
             ast.add_child(name=i)
     return ast
 
+#
+# def create_levels(symbol_table, level=1):
+#     # assign level to local vars in func.
+#     for i in symbol_table.values():
+#         if i.type == "func":
+#             if i.params is not None:
+#                 for m in i.params.values():
+#                     m.level = level
+#             if i.locals is not None:
+#                 for k in i.locals.values():
+#                     k.level = level
+#                     if k.type == "func":
+#                         create_levels(k.locals, level=level + 1)
+
 
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
     """
@@ -48,8 +62,9 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
                 for i in range(0, len(ids_and_types), 2):
                     if ids_and_types[i] in params.keys():
                         raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
-                    params[ids_and_types[i]] = (SymbolRecord(ids_and_types[i], ids_and_types[i+1], param=True, level=level,
-                                                           address=address))
+                    params[ids_and_types[i]] = (
+                        SymbolRecord(ids_and_types[i], ids_and_types[i + 1], param=True, level=level,
+                                     address=address))
                     address += 1
             func_name = symbols[index].name
             symbol_table[func_name] = (
@@ -89,3 +104,4 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
             if ancestor.get_sisters()[0].name == "let":
                 symbol_table[symbols[index].name].const = True
         index += 1
+    # create_levels(symbol_table)

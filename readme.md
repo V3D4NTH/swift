@@ -14,13 +14,19 @@ School Project: **Not so Swift Language** compiler
 - for (c like)
 -------
 todo
-- for defined in (https://docs.swift.org/swift-book/LanguageGuide/ControlFlow.html)
 
-for index in 1...5 { 
+[//]: # (- for defined in &#40;https://docs.swift.org/swift-book/LanguageGuide/ControlFlow.html&#41;)
 
-some code 
+[//]: # ()
+[//]: # (for index in 1...5 { )
 
-}
+[//]: # ()
+[//]: # (some code )
+
+[//]: # ()
+[//]: # (})
+
+- boolean
 - while
 - repeat while
 - ternary operator

@@ -1,6 +1,7 @@
 #  date: 8. 11. 2022
 #  author: Daniel Schnurpfeil
 #
+from copy import copy
 
 from ete3 import Tree
 
@@ -92,7 +93,7 @@ class Pl0(Pl0Const):
         while index < len(sub_tree):
             #  generates expression_term statements
             if sub_tree[index].name in self.expressions:
-                index = self.gen_expression(sub_tree, index, symbol_table=symbol_table)
+                index = self.gen_expression(sub_tree, index, symbol_table=symbol_table, level=level)
             #  generates variable declaration statements
             elif sub_tree[index].name == "var_declaration_expression":
                 self.generate_instruction(inst(t.int), 0, 1)
@@ -100,7 +101,7 @@ class Pl0(Pl0Const):
                 # shifting index to skip duplicates
                 # recursive call
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-                level -= 1
+                
                 self.store_var(symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
             #  generates variable modification statements
@@ -116,7 +117,7 @@ class Pl0(Pl0Const):
                 pass
             elif sub_tree[index].name == "return_statement":
                 # todo
-                print(sub_tree[index].get_ascii(attributes=["name", "dist", "label", "complex"]))
+                pass
             elif sub_tree[index].name == "function_signature":
                 self.curr_func_name = sub_tree[index].children[0].name
                 func_block = sub_tree[index].children[3].children[0]
@@ -130,6 +131,7 @@ class Pl0(Pl0Const):
                     locals_and_params.update(symbol_table[self.curr_func_name].params)
                 self.generate_code(sub_tree=sub_sub_tree, level=level,
                                    symbol_table=locals_and_params)
+                level -= 1
                 index += len(sub_sub_tree)
             #  update index
             index += 1
@@ -183,7 +185,47 @@ class Pl0(Pl0Const):
         self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
         return condition, index, level
 
-    def gen_expression(self, sub_tree, index, symbol_table=None):
+    def gen_func_call(self, sub_tree, symbol_table=None, level=0):
+        """
+        It generates the code for a function call
+
+        :param sub_tree: The subtree of the AST that represents the function call
+        :param symbol_table: The symbol table that the function is being called in
+        :param level: the level of indentation, defaults to 0 (optional)
+        """
+        i = 0
+        func_len = 0
+
+        while i < (len(sub_tree)):
+            if sub_tree[i].name == "function_call":
+                sub_sub_tree = self.clear_tree(sub_tree[i].iter_prepostorder())
+                self.generate_instruction(inst(t.int), 0, 1)
+                f_name = sub_tree[i].children[0].name
+                f_args = sub_tree[i].children[1]
+                args_len = 0
+                while f_args.name == "arguments_list":
+                    if f_args.children[0].get_leaf_names()[0] in symbol_table.keys():
+                        self.gen_load_symbol(symbol_table[f_args.children[0].get_leaf_names()[0]])
+                    else:
+                        self.gen_const(f_args.children[0].get_leaf_names()[0])
+                    f_args = copy(f_args.children[1])
+                    args_len += 1
+                if f_args.children[0].get_leaf_names()[0] in symbol_table.keys():
+                    self.gen_load_symbol(symbol_table[f_args.children[0].get_leaf_names()[0]])
+                else:
+                    self.gen_const(f_args.children[0].get_leaf_names()[0])
+                args_len += 1
+                i += len(sub_sub_tree)
+                func_len = i
+                self.generate_instruction(inst(t.cal), level, symbol_table[f_name].address)
+                self.generate_instruction(inst(t.int), 0, -args_len)
+            i += 1
+        if func_len > 0:
+            return i
+        else:
+            return None
+
+    def gen_expression(self, sub_tree, index, symbol_table=None, level=0):
         """
         It takes a tree, an index, and a symbol table, and returns a string of Python code
 
@@ -191,6 +233,11 @@ class Pl0(Pl0Const):
         :param index: the index of the current node in the tree
         :param symbol_table: a dictionary of variables and their values
         """
+
+        func_len = self.gen_func_call(sub_tree, symbol_table=symbol_table, level=level)
+        if func_len is not None:
+            return func_len
+
         leaf_names = sub_tree[index].get_leaf_names()
         leaves = sub_tree[index].get_leaves()
         if len(leaf_names) > 2:
@@ -241,7 +288,7 @@ class Pl0(Pl0Const):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=oper_and_equals, level=level + 1)
-        level -= 1
+        
         index += 1
         self.store_var(symbol_table[symbol_name])
         return index, level
@@ -269,7 +316,7 @@ class Pl0(Pl0Const):
             x = id("x" + str(level))
             self.generate_instruction(inst(t.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-            level -= 1
+            
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
@@ -285,7 +332,7 @@ class Pl0(Pl0Const):
                 y = id("y" + str(level))
                 self.generate_instruction(inst(t.jmp), 0, y)
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-                level -= 1
+                
                 index += len(sub_sub_tree)
                 for i in self.code:
                     if i[2] == y:
@@ -304,8 +351,8 @@ class Pl0(Pl0Const):
         sub_sub_tree = self.clear_tree(sub_tree.iter_prepostorder())
         # shifting index to skip duplicates
         # recursive call
-        self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-        level -= 1
+        self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
+
         index += len(sub_sub_tree)
         return index, level
 
