@@ -218,7 +218,7 @@ class Pl0(Pl0Const):
                 elif f_args.children[0].get_leaf_names()[0] != "":
                     self.gen_const(f_args.children[0].get_leaf_names()[0])
                     args_len += 1
-
+                # todo addresses bug
                 i += len(sub_sub_tree)
                 func_len = i
                 self.generate_instruction(inst(t.cal), level, symbol_table[f_name].address)
