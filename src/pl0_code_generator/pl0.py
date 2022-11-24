@@ -100,7 +100,7 @@ class Pl0(Pl0Const):
                 sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
                 # shifting index to skip duplicates
                 # recursive call
-                self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
+                self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
                 
                 self.store_var(symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
@@ -121,7 +121,6 @@ class Pl0(Pl0Const):
             elif sub_tree[index].name == "function_signature":
                 self.curr_func_name = sub_tree[index].children[0].name
                 func_block = sub_tree[index].children[3].children[0]
-                level += 1
                 sub_sub_tree = self.clear_tree(func_block.iter_prepostorder())
                 index += len(self.clear_tree(sub_tree[index].iter_prepostorder())) - len(sub_sub_tree)
                 locals_and_params = {}
@@ -129,9 +128,10 @@ class Pl0(Pl0Const):
                     locals_and_params.update(symbol_table[self.curr_func_name].locals)
                 if symbol_table[self.curr_func_name].params is not None:
                     locals_and_params.update(symbol_table[self.curr_func_name].params)
+                for i in locals_and_params.values():
+                    i.level = level + 1
                 self.generate_code(sub_tree=sub_sub_tree, level=level,
                                    symbol_table=locals_and_params)
-                level -= 1
                 index += len(sub_sub_tree)
             #  update index
             index += 1
@@ -206,19 +206,24 @@ class Pl0(Pl0Const):
                 while f_args.name == "arguments_list":
                     if f_args.children[0].get_leaf_names()[0] in symbol_table.keys():
                         self.gen_load_symbol(symbol_table[f_args.children[0].get_leaf_names()[0]])
+                        args_len += 1
                     else:
                         self.gen_const(f_args.children[0].get_leaf_names()[0])
+                        args_len += 1
                     f_args = copy(f_args.children[1])
-                    args_len += 1
+
                 if f_args.children[0].get_leaf_names()[0] in symbol_table.keys():
                     self.gen_load_symbol(symbol_table[f_args.children[0].get_leaf_names()[0]])
-                else:
+                    args_len += 1
+                elif f_args.children[0].get_leaf_names()[0] != "":
                     self.gen_const(f_args.children[0].get_leaf_names()[0])
-                args_len += 1
+                    args_len += 1
+
                 i += len(sub_sub_tree)
                 func_len = i
                 self.generate_instruction(inst(t.cal), level, symbol_table[f_name].address)
-                self.generate_instruction(inst(t.int), 0, -args_len)
+                if args_len > 0:
+                    self.generate_instruction(inst(t.int), 0, -args_len)
             i += 1
         if func_len > 0:
             return i
