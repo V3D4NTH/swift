@@ -5,7 +5,7 @@ from copy import copy
 
 from ete3 import Tree
 
-from src.pl0_code_generator.pl0_const import Inst as t, Op as o, SymbolRecord, Pl0Const
+from src.pl0_code_generator.pl0_const import Inst as Inst, Op as Op, SymbolRecord, Pl0Const
 from src.pl0_code_generator.pl0_utils import inst, op
 
 
@@ -29,10 +29,10 @@ class Pl0(Pl0Const):
         """
         It generates instructions for the PL/0.
         """
-        self.generate_instruction(inst(t.int), 0, 3)
+        self.generate_instruction(inst(Inst.int), 0, 3)
         self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()), symbol_table=self.symbol_table)
         # end of code
-        self.generate_instruction(inst(t.ret), 0, 0)
+        self.generate_instruction(inst(Inst.ret), 0, 0)
 
     def generate_instruction(self, inst_name, param1, param2):
         """
@@ -96,7 +96,7 @@ class Pl0(Pl0Const):
                 index = self.gen_expression(sub_tree, index, symbol_table=symbol_table, level=level)
             #  generates variable declaration statements
             elif sub_tree[index].name == "var_declaration_expression":
-                self.generate_instruction(inst(t.int), 0, 1)
+                self.generate_instruction(inst(Inst.int), 0, 1)
                 sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
                 # shifting index to skip duplicates
                 # recursive call
@@ -140,9 +140,9 @@ class Pl0(Pl0Const):
         :param const: The constant to be generated
         """
         if type(const) == int:
-            self.generate_instruction(inst(t.lit), 0, const)
+            self.generate_instruction(inst(Inst.lit), 0, const)
 
-    def gen_opr(self, const1, operator: o, const2):
+    def gen_opr(self, const1, operator: Op, const2):
         """
         It generates instructions for the operation of two constants
         :param const1: The first constant to be used in the operation
@@ -154,7 +154,7 @@ class Pl0(Pl0Const):
             self.gen_const(const1)
         if const2:
             self.gen_const(const2)
-        self.generate_instruction(inst(t.opr), 0, str(operator))
+        self.generate_instruction(inst(Inst.opr), 0, str(operator))
 
     @staticmethod
     def clear_tree(tree_iter_generator):
@@ -198,7 +198,7 @@ class Pl0(Pl0Const):
         while i < (len(sub_tree)):
             if sub_tree[i].name == "function_call":
                 sub_sub_tree = self.clear_tree(sub_tree[i].iter_prepostorder())
-                self.generate_instruction(inst(t.int), 0, 1)
+                self.generate_instruction(inst(Inst.int), 0, 1)
                 f_name = sub_tree[i].children[0].name
                 f_args = sub_tree[i].children[1]
                 args_len = 0
@@ -219,9 +219,9 @@ class Pl0(Pl0Const):
                     args_len += 1
                 i += len(sub_sub_tree)
                 func_len = i
-                self.generate_instruction(inst(t.cal), level, symbol_table[f_name].address)
+                self.generate_instruction(inst(Inst.cal), level, symbol_table[f_name].address)
                 if args_len > 0:
-                    self.generate_instruction(inst(t.int), 0, -args_len)
+                    self.generate_instruction(inst(Inst.int), 0, -args_len)
             i += 1
         if func_len > 0:
             return i
@@ -318,7 +318,7 @@ class Pl0(Pl0Const):
             # shifting index to skip duplicates
             # recursive call
             x = id("x" + str(level))
-            self.generate_instruction(inst(t.jmc), 0, x)
+            self.generate_instruction(inst(Inst.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
 
             index += len(sub_sub_tree)
@@ -334,7 +334,7 @@ class Pl0(Pl0Const):
                 # shifting index to skip duplicates
                 # recursive call
                 y = id("y" + str(level))
-                self.generate_instruction(inst(t.jmp), 0, y)
+                self.generate_instruction(inst(Inst.jmp), 0, y)
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
 
                 index += len(sub_sub_tree)
@@ -367,7 +367,7 @@ class Pl0(Pl0Const):
         :param var: The variable to store
         :type var: SymbolRecord
         """
-        self.generate_instruction(inst(t.sto), var.level, var.address)
+        self.generate_instruction(inst(Inst.sto), var.level, var.address)
 
     def gen_load_symbol(self, symbol: SymbolRecord):
         """
@@ -376,52 +376,52 @@ class Pl0(Pl0Const):
         :param symbol: The symbol record for the symbol to be loaded
         :type symbol: SymbolRecord
         """
-        self.generate_instruction(inst(t.lod), symbol.level, symbol.address)
+        self.generate_instruction(inst(Inst.lod), symbol.level, symbol.address)
 
     def gen_opr_add(self, const1=None, const2=None):
-        self.gen_opr(const1, op(o.add), const2)
+        self.gen_opr(const1, op(Op.add), const2)
 
     def gen_opr_sub(self, const1=None, const2=None):
-        self.gen_opr(const1, op(o.sub), const2)
+        self.gen_opr(const1, op(Op.sub), const2)
 
     def gen_opr_mul(self, const1=None, const2=None):
-        self.gen_opr(const1, op(o.mul), const2)
+        self.gen_opr(const1, op(Op.mul), const2)
 
     def gen_opr_div(self, const1=None, const2=None):
-        self.gen_opr(const1, op(o.div), const2)
+        self.gen_opr(const1, op(Op.div), const2)
 
     def gen_term(self, const1=None, const2=None):
         self.gen_const(const1)
 
     def gen_sub(self, operator):
-        self.generate_instruction(inst(t.opr), 0, op(o.sub))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.sub))
 
     def gen_add(self, operator):
-        self.generate_instruction(inst(t.opr), 0, op(o.add))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.add))
 
     def gen_mulby(self, operator):
-        self.generate_instruction(inst(t.opr), 0, op(o.mul))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.mul))
 
     def gen_divby(self, operator):
-        self.generate_instruction(inst(t.opr), 0, op(o.div))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.div))
 
     def gen_equals(self, operator):
         pass
 
     def gen_lesser(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.lt))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.lt))
 
     def gen_not_equal(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.ne))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.ne))
 
     def gen_lesser_equals(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.le))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.le))
 
     def gen_greater(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.gt))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.gt))
 
     def gen_greater_equals(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.ge))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.ge))
 
     def gen_dos_equals(self):
-        self.generate_instruction(inst(t.opr), 0, op(o.eq))
+        self.generate_instruction(inst(Inst.opr), 0, op(Op.eq))
