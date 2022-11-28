@@ -4,5 +4,5 @@ func function(a: Int, b: Int, c: Int) -> Int {
     c += 141;
     return a + 10;
 }
-var par: Int = 6666;
+var par: Int = 99999;
 var glob: Int = function(par, 30, 40 );

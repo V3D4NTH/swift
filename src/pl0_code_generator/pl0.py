@@ -115,9 +115,6 @@ class Pl0(Pl0Const):
                 index, level = self.gen_if_else(sub_tree, index, level, symbol_table=symbol_table)
             elif sub_tree[index].name == "function_call":
                 pass
-            elif sub_tree[index].name == "return_statement":
-                # todo
-                pass
             elif sub_tree[index].name == "function_signature":
                 self.curr_func_name = sub_tree[index].children[0].name
                 func_block = sub_tree[index].children[3].children[0]
@@ -128,8 +125,9 @@ class Pl0(Pl0Const):
                     locals_and_params.update(symbol_table[self.curr_func_name].locals)
                 if symbol_table[self.curr_func_name].params is not None:
                     locals_and_params.update(symbol_table[self.curr_func_name].params)
-                for i in locals_and_params.values():
+                for new_addr, i in enumerate(locals_and_params.values()):
                     i.level = level + 1
+                    i.address = new_addr + 3
                 self.generate_code(sub_tree=sub_sub_tree, level=level,
                                    symbol_table=locals_and_params)
                 index += len(sub_sub_tree)
@@ -218,7 +216,6 @@ class Pl0(Pl0Const):
                 elif f_args.children[0].get_leaf_names()[0] != "":
                     self.gen_const(f_args.children[0].get_leaf_names()[0])
                     args_len += 1
-                # todo addresses bug
                 i += len(sub_sub_tree)
                 func_len = i
                 self.generate_instruction(inst(t.cal), level, symbol_table[f_name].address)
