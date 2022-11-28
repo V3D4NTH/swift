@@ -101,7 +101,7 @@ class Pl0(Pl0Const):
                 # shifting index to skip duplicates
                 # recursive call
                 self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-                
+
                 self.store_var(symbol_table[sub_tree[index].children[0].name])
                 index += len(sub_sub_tree)
             #  generates variable modification statements
@@ -156,7 +156,8 @@ class Pl0(Pl0Const):
             self.gen_const(const2)
         self.generate_instruction(inst(t.opr), 0, str(operator))
 
-    def clear_tree(self, tree_iter_generator):
+    @staticmethod
+    def clear_tree(tree_iter_generator):
         """
         It takes a generator that yields tree iterators, and clears the tree of all rows
         :param tree_iter_generator: A generator that returns a Gtk.TreeIter for each row in the tree
@@ -231,6 +232,7 @@ class Pl0(Pl0Const):
         """
         It takes a tree, an index, and a symbol table, and returns a string of Python code
 
+        :param level: level
         :param sub_tree: The subtree of the parse tree that we are currently working on
         :param index: the index of the current node in the tree
         :param symbol_table: a dictionary of variables and their values
@@ -290,7 +292,7 @@ class Pl0(Pl0Const):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=oper_and_equals, level=level + 1)
-        
+
         index += 1
         self.store_var(symbol_table[symbol_name])
         return index, level
@@ -318,7 +320,7 @@ class Pl0(Pl0Const):
             x = id("x" + str(level))
             self.generate_instruction(inst(t.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-            
+
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
@@ -334,7 +336,7 @@ class Pl0(Pl0Const):
                 y = id("y" + str(level))
                 self.generate_instruction(inst(t.jmp), 0, y)
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-                
+
                 index += len(sub_sub_tree)
                 for i in self.code:
                     if i[2] == y:
