@@ -96,14 +96,8 @@ class Pl0(Pl0Const):
                 index = self.gen_expression(sub_tree, index, symbol_table=symbol_table, level=level)
             #  generates variable declaration statements
             elif sub_tree[index].name == "var_declaration_expression":
-                self.generate_instruction(inst(Inst.int), 0, 1)
-                sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
-                # shifting index to skip duplicates
-                # recursive call
-                self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-
-                self.store_var(symbol_table[sub_tree[index].children[0].name])
-                index += len(sub_sub_tree)
+                index, level = self.gen_var_declaration_expression(sub_tree, index, level=level,
+                                                                   symbol_table=symbol_table)
             #  generates variable modification statements
             elif sub_tree[index].name in self.var_modifications:
                 self.var_modifications[sub_tree[index].name](sub_tree[index].name)
@@ -113,26 +107,65 @@ class Pl0(Pl0Const):
             #  generates if (else) statements
             elif sub_tree[index].name == "if_stmt" or sub_tree[index].name == "if_else_stmt":
                 index, level = self.gen_if_else(sub_tree, index, level, symbol_table=symbol_table)
-            elif sub_tree[index].name == "function_call":
-                pass
             elif sub_tree[index].name == "function_signature":
-                self.curr_func_name = sub_tree[index].children[0].name
-                func_block = sub_tree[index].children[3].children[0]
-                sub_sub_tree = self.clear_tree(func_block.iter_prepostorder())
-                index += len(self.clear_tree(sub_tree[index].iter_prepostorder())) - len(sub_sub_tree)
-                locals_and_params = {}
-                if symbol_table[self.curr_func_name].locals is not None:
-                    locals_and_params.update(symbol_table[self.curr_func_name].locals)
-                if symbol_table[self.curr_func_name].params is not None:
-                    locals_and_params.update(symbol_table[self.curr_func_name].params)
-                for new_addr, i in enumerate(locals_and_params.values()):
-                    i.level = level + 1
-                    i.address = new_addr + 3
-                self.generate_code(sub_tree=sub_sub_tree, level=level,
-                                   symbol_table=locals_and_params)
-                index += len(sub_sub_tree)
+                index, level = self.gen_function_signature(sub_tree, index, level=level,
+                                                           symbol_table=symbol_table)
             #  update index
             index += 1
+
+    def gen_function_signature(self, sub_tree, index, symbol_table=None, level=0):
+        """
+        This function generates the function signature adn body for a function definition
+
+        :param sub_tree: the subtree of the AST that we're currently working on
+        :param index: the index of the current node in the tree
+        :param symbol_table: The symbol table that the function is being added to
+        :param level: the level of the function in the tree, defaults to 0 (optional)
+        """
+        self.curr_func_name = sub_tree[index].children[0].name
+        y = id("y" + str(self.curr_func_name))
+        self.generate_instruction(inst(Inst.jmp), 0, y)
+        self.symbol_table[self.curr_func_name].address = len(self.code)
+        func_block = sub_tree[index].children[3].children[0]
+        sub_sub_tree = self.clear_tree(func_block.iter_prepostorder())
+        index += len(self.clear_tree(sub_tree[index].iter_prepostorder())) - len(sub_sub_tree)
+        locals_and_params = {}
+        if symbol_table[self.curr_func_name].locals is not None:
+            locals_and_params.update(symbol_table[self.curr_func_name].locals)
+        if symbol_table[self.curr_func_name].params is not None:
+            locals_and_params.update(symbol_table[self.curr_func_name].params)
+        for new_addr, i in enumerate(locals_and_params.values()):
+            i.level = level + 1
+            i.address = new_addr + 3
+        self.generate_instruction(inst(Inst.int), 0, 3 + len(symbol_table[self.curr_func_name].params))
+        self.generate_instruction(inst(Inst.lod), 0, - len(symbol_table[self.curr_func_name].params))
+        self.generate_code(sub_tree=sub_sub_tree, level=level,
+                           symbol_table=locals_and_params)
+        index += len(sub_sub_tree)
+        self.generate_instruction(inst(Inst.sto), 0, 1 - (len(symbol_table[self.curr_func_name].params)))
+        self.generate_instruction(inst(Inst.ret), 0, 0)
+        for i in self.code:
+            if i[2] == y:
+                i[2] = len(self.code)
+        return index, level
+
+    def gen_var_declaration_expression(self, sub_tree, index, symbol_table=None, level=0):
+        """
+        It generates a variable declaration expression.
+
+        :param sub_tree: the subtree of the AST that we're currently working on
+        :param index: the index of the current node in the tree
+        :param symbol_table: the symbol table that the variable is being declared in
+        :param level: the level of the current scope, defaults to 0 (optional)
+        """
+        self.generate_instruction(inst(Inst.int), 0, 1)
+        sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+        # shifting index to skip duplicates
+        # recursive call
+        self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
+        self.store_var(symbol_table[sub_tree[index].children[0].name])
+        index += len(sub_sub_tree)
+        return index, level
 
     def gen_const(self, const):
         """
