@@ -27,20 +27,6 @@ def make_node(node_name: str, children=None) -> Tree:
             ast.add_child(name=i)
     return ast
 
-#
-# def create_levels(symbol_table, level=1):
-#     # assign level to local vars in func.
-#     for i in symbol_table.values():
-#         if i.type == "func":
-#             if i.params is not None:
-#                 for m in i.params.values():
-#                     m.level = level
-#             if i.locals is not None:
-#                 for k in i.locals.values():
-#                     k.level = level
-#                     if k.type == "func":
-#                         create_levels(k.locals, level=level + 1)
-
 
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
     """
@@ -94,14 +80,16 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
                                                                                 children[0].name,
                                                                                 level=level,
                                                                                 address=address))
+                if ancestor.get_sisters()[0].name == "let":
+                    symbol_table[level].locals[symbols[index].name].const = True
             else:
                 symbol_table[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                   symbol_type=symbols[index].get_sisters()[0].
                                                                   children[0].name,
                                                                   level=level,
                                                                   address=address))
+                if ancestor.get_sisters()[0].name == "let":
+                    symbol_table[symbols[index].name].const = True
             address += 1
-            if ancestor.get_sisters()[0].name == "let":
-                symbol_table[symbols[index].name].const = True
         index += 1
     # create_levels(symbol_table)

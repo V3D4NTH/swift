@@ -1,15 +1,20 @@
 #  date: 13. 11. 2022
 #  author: Daniel Schnurpfeil
 #
+# all testcases are validated with https://home.zcu.cz/~lipka/fjp/pl0/
 
 from unittest import TestCase
 
 from src.main import main
 
 
+# It's a class that inherits from the TestCase class, and it's called Test
 class Test(TestCase):
 
     def test_operation(self):
+        """
+        It tests the operation of the function.
+        """
         code = main("../sample_input/operation.swift")
         self.assertEqual(
             """0 INT 0 3
@@ -22,6 +27,9 @@ class Test(TestCase):
 """, code, "operation")
 
     def test_declaration(self):
+        """
+        It tests the declaration of a variable.
+        """
         code = main("../sample_input/declaration.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
@@ -39,6 +47,9 @@ class Test(TestCase):
                          , code, "operation")
 
     def test_operators(self):
+        """
+        It tests the operators
+        """
         code = main("../sample_input/operators.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
@@ -60,6 +71,10 @@ class Test(TestCase):
 """, code, "operators")
 
     def test_if(self):
+        """
+        It tests if the
+        condition is true.
+        """
         code = main("../sample_input/if.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
@@ -148,11 +163,38 @@ class Test(TestCase):
     # def test_for_in_func(self):
     #     code = main("../sample_input/for_in_func.swift")
     #     self.assertEqual(" ", code, "for_in_func")
-    #
-    # def test_func(self):
-    #     code = main("../sample_input/func.swift")
-    #     self.assertEqual(" ", code, "func")
-    #
+
+
+    def test_func(self):
+        code = main("../sample_input/func.swift")
+        self.assertEqual("""0 INT 0 3
+1 INT 0 1
+2 INT 0 1
+3 CAL 0 5
+4 STO 0 3
+5 INT 0 1
+6 LIT 0 42
+7 STO 0 4
+8 JMP 0 16
+9 INT 0 3
+10 LOD 0 0
+11 INT 0 1
+12 LIT 0 42
+13 STO 1 3
+14 STO 0 1
+15 RET 0 0
+16 JMP 0 22
+17 INT 0 3
+18 LOD 0 0
+19 LIT 0 52
+20 STO 0 1
+21 RET 0 0
+22 INT 0 1
+23 CAL 0 9
+24 INT 0 1
+25 CAL 0 9
+26 RET 0 0
+""", code, "func")
 
     def test_func_very_simple(self):
         code = main("../sample_input/func_very_simple.swift")
