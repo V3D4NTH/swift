@@ -5,8 +5,7 @@ from copy import copy
 
 from ete3 import Tree
 
-from src.pl0_code_generator.pl0_const import Inst as Inst, Op as Op, SymbolRecord, Pl0Const
-from src.pl0_code_generator.pl0_utils import inst, op
+from src.pl0_code_generator.pl0_const import Inst as Inst, Op as Op, SymbolRecord, Pl0Const, inst, op
 
 
 # > The class Pl0 is a class that represents a PL/0 program
