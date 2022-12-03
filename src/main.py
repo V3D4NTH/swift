@@ -49,6 +49,9 @@ def main(input_file_name: str):
     # Generating the output files.
     generate_output_files(dst, generated_code)
 
+    # Showing the tree. with pyqt5
+    dst.show()
+
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
 
@@ -61,9 +64,6 @@ def main(input_file_name: str):
             txt.writelines("----------generated code------------\n")
             txt.writelines(generated_code.return_code())
             txt.writelines("------------------------------------")
-
-    # Showing the tree. with pyqt5
-    dst.show()
 
     return generated_code.return_code()
 
