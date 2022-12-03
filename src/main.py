@@ -5,6 +5,8 @@ import os
 
 import ply.lex
 import ply.yacc as yy
+from ete3 import TreeStyle
+
 import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
@@ -32,8 +34,8 @@ def main(input_file_name: str):
 
     with open(input_file_name) as f:
         code = f.read()
-    print("input_code:")
-    print(code)
+    # print("input_code:")
+    # print(code)
     code = code.replace("\n", " ")
     # Parsing the code_input.
     lexer = \
@@ -50,7 +52,11 @@ def main(input_file_name: str):
     generate_output_files(dst, generated_code)
 
     # Showing the tree. with pyqt5
-    dst.show()
+    tree_style = TreeStyle()
+    tree_style.show_leaf_name = True
+    tree_style.mode = "c"
+    tree_style.arc_start = -180  # 0 degrees = 3 o'clock
+    dst.show(tree_style=tree_style)
 
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
