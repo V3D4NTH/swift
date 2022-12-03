@@ -1,6 +1,7 @@
 #  date: 8. 11. 2022
 #  authors: Daniel Schnurpfeil,  Jiri Trefil
 #
+import os
 
 import ply.lex
 import ply.yacc as yy
@@ -10,32 +11,60 @@ import src.pl0_code_generator as gen
 from src.syntax_analyzer.utils import generate_table_of_symbols
 
 
+def generate_output_files(dst, generated_code):
+    if "output" not in os.listdir("../"):
+        os.mkdir("../output")
+    with open("../output/full_tree.txt", mode="w") as tree:
+        tree.writelines(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
+    with open("../output/tree.txt", mode="w") as tree:
+        tree.writelines(str(dst))
+    with open("../output/symbol_table.txt", mode="w") as table:
+        generated_code.print_symbol_table(table.writelines)
+
+
 def main(input_file_name: str):
+    """
+    "This function takes a file name as input and returns a list of the words in the file."
+
+    :param input_file_name: The name of the file that contains the input data
+    :type input_file_name: str
+    """
+
     with open(input_file_name) as f:
         code = f.read()
     print("input_code:")
     print(code)
     code = code.replace("\n", " ")
     # Parsing the code_input.
-    # lexer = \
+    lexer = \
     ply.lex.lex(module=lexical)
-    # ply.lex.runmain(lexer, code)
     y = yy.yacc(module=syntax, debug=True)
     dst = y.parse(code)
 
-    print(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
-    print(dst)
+    # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
-
-    # Generating the code for the PL/0 compiler.
     generated_code = gen.Pl0(dst, table_of_symbols)
-    generated_code.print_symbol_table()
+
+    # Generating the output files.
+    generate_output_files(dst, generated_code)
+
+    # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
-    # It prints the symbol table and the generated code.
-    print("----------generated code------------")
-    generated_code.print_code()
-    print("------------------------------------")
+
+    if generated_code.return_code() != "":
+        # Writing the generated code to a file.
+        with open("../output/generated_code.txt", mode="w") as txt:
+            txt.writelines("----------input code----------------\n")
+            txt.writelines(code)
+            txt.writelines("\n")
+            txt.writelines("----------generated code------------\n")
+            txt.writelines(generated_code.return_code())
+            txt.writelines("------------------------------------")
+
+    # Showing the tree. with pyqt5
+    dst.show()
+
     return generated_code.return_code()
 
 

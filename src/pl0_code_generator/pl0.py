@@ -43,32 +43,32 @@ class Pl0(Pl0Const):
         """
         self.code.append([inst_name, param1, param2])
 
-    def print_code(self):
+    def print_code(self, out_method):
         """
         It prints the code of the program
         """
         for index, c in enumerate(self.code):
-            print(index, "", c[0], c[1], c[2])
+            out_method(str(index) + " " + "" + str(c[0]) + " " + str(c[1]) + " " + str(c[2]))
 
-    def print_symbol_table(self):
+    def print_symbol_table(self, out_method):
         """
         It prints the symbol table
         """
         for i in self.symbol_table.values():
             if i.type == "func":
-                print(i.__str__())
+                out_method(i.__str__())
 
                 if i.params is not None:
-                    print("--------params--------")
+                    out_method("--------params--------\n")
                     for j in i.params:
-                        print(i.params[j].__str__())
+                        out_method(i.params[j].__str__())
 
                 if i.locals is not None:
-                    print("--------locals--------")
+                    out_method("--------locals--------\n")
                     for k in i.locals:
-                        print(i.locals[k].__str__())
+                        out_method(i.locals[k].__str__())
             else:
-                print(i.__str__())
+                out_method(i.__str__())
 
     def return_code(self) -> str:
         """
