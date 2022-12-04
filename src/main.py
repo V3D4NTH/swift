@@ -2,6 +2,7 @@
 #  authors: Daniel Schnurpfeil,  Jiri Trefil
 #
 import os
+from copy import copy
 
 import ply.lex
 import ply.yacc as yy
@@ -36,6 +37,7 @@ def main(input_file_name: str):
         code = f.read()
     # print("input_code:")
     # print(code)
+    formatted_input_code = copy(code)
     code = code.replace("\n", " ")
     # Parsing the code_input.
     lexer = \
@@ -52,11 +54,13 @@ def main(input_file_name: str):
     generate_output_files(dst, generated_code)
 
     # Showing the tree. with pyqt5
-    tree_style = TreeStyle()
-    tree_style.show_leaf_name = True
-    tree_style.mode = "c"
-    tree_style.arc_start = -180  # 0 degrees = 3 o'clock
-    dst.show(tree_style=tree_style)
+    # tree_style = TreeStyle()
+    # tree_style.show_leaf_name = True
+    # tree_style.mode = "c"
+    # tree_style.arc_start = -180  # 0 degrees = 3 o'clock
+    # dst.show(
+        # tree_style=tree_style
+    # )
 
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
@@ -65,7 +69,7 @@ def main(input_file_name: str):
         # Writing the generated code to a file.
         with open("../output/generated_code.txt", mode="w") as txt:
             txt.writelines("----------input code----------------\n")
-            txt.writelines(code)
+            txt.writelines(formatted_input_code)
             txt.writelines("\n")
             txt.writelines("----------generated code------------\n")
             txt.writelines(generated_code.return_code())

@@ -28,21 +28,20 @@ def make_node(node_name: str, children=None) -> Tree:
     return ast
 
 
-def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
+def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3):
     """
         It generates a table of symbols
         """
     symbols = symbols
     level = level
     index = 0
-    address = 3
     while index < len(symbols):
         ancestor = symbols[index].get_ancestors()[0]
         if ancestor.name == "function_signature":
             if symbols[index].name in symbol_table.keys():
                 raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
             params = {}
-
+            local_address = 3
             ids_and_types = symbols[index].get_sisters()[0].get_leaf_names()
             if len(ids_and_types) > 1:
                 for i in range(0, len(ids_and_types), 2):
@@ -50,8 +49,8 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
                         raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
                     params[ids_and_types[i]] = (
                         SymbolRecord(ids_and_types[i], ids_and_types[i + 1], param=True, level=level,
-                                     address=address))
-                    address += 1
+                                     address=local_address))
+                    local_address += 1
             func_name = symbols[index].name
             symbol_table[func_name] = (
                 SymbolRecord(symbols[index].name, "func", params=params, level=level,
@@ -62,7 +61,8 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", ):
             # shifting index to skip duplicates
             index += len(func_body)
             # recursive call
-            generate_table_of_symbols(symbol_table, level=symbol_table[func_name].name, symbols=func_body)
+            generate_table_of_symbols(symbol_table, level=symbol_table[func_name].name,
+                                      symbols=func_body, address=local_address)
         if ancestor.name == "var_declaration_expression":
             if symbols[index].name in symbol_table.keys() and symbol_table[symbols[index].name].level == "0":
                 raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())

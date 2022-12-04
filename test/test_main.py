@@ -43,8 +43,7 @@ class Test(TestCase):
 9 OPR 0 2
 10 STO 0 4
 11 RET 0 0
-"""
-                         , code, "operation")
+""", code, "operation")
 
     def test_operators(self):
         """
@@ -146,54 +145,84 @@ class Test(TestCase):
 2 LIT 0 40
 3 STO 0 3
 4 INT 0 1
-5 STO 0 4
-6 INT 0 1
-7 STO 0 5
-8 INT 0 1
-9 OPR 0 2
-10 STO 0 6
-11 RET 0 0
+5 LOD 0 3
+6 STO 0 4
+7 INT 0 1
+8 LOD 0 4
+9 STO 0 5
+10 INT 0 1
+11 LOD 0 4
+12 LOD 0 5
+13 OPR 0 2
+14 STO 0 6
+15 RET 0 0
 """, code, "multiple_decl")
 
     # def test_while(self):
     #     code = main("../sample_input/while.swift")
     #     self.assertEqual(" ", code, "while")
 
-    #
-    # def test_for_in_func(self):
-    #     code = main("../sample_input/for_in_func.swift")
-    #     self.assertEqual(" ", code, "for_in_func")
-
-
-    def test_func(self):
-        code = main("../sample_input/func.swift")
+    def test_for(self):
+        code = main("../sample_input/for.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
-2 INT 0 1
-3 CAL 0 5
-4 STO 0 3
-5 INT 0 1
-6 LIT 0 42
-7 STO 0 4
-8 JMP 0 16
-9 INT 0 3
-10 LOD 0 0
-11 INT 0 1
-12 LIT 0 42
-13 STO 1 3
-14 STO 0 1
-15 RET 0 0
-16 JMP 0 22
-17 INT 0 3
-18 LOD 0 0
-19 LIT 0 52
-20 STO 0 1
+2 LIT 0 0
+3 STO 0 3
+4 INT 0 1
+5 LIT 0 1
+6 STO 0 4
+7 LOD 0 4
+8 LIT 0 20
+9 OPR 0 10
+10 JMC 0 20
+11 LIT 0 1
+12 LOD 0 3
+13 OPR 0 2
+14 STO 0 3
+15 LIT 0 1
+16 LOD 0 4
+17 OPR 0 2
+18 STO 0 4
+19 JMP 0 7
+20 RET 0 0
+""", code, "for")
+
+    def test_func(self):
+        code = main("../sample_input/func_simple.swift")
+        self.assertEqual("""0 INT 0 3
+1 JMP 0 22
+2 INT 0 3
+3 LOD 0 -3
+4 LOD 0 -2
+5 LOD 0 -1
+6 INT 0 1
+7 LIT 0 6666
+8 STO 0 6
+9 LOD 0 5
+10 LIT 0 1000
+11 OPR 0 2
+12 STO 0 4
+13 LIT 0 141
+14 LOD 0 5
+15 OPR 0 2
+16 STO 0 5
+17 LOD 0 3
+18 LIT 0 1
+19 OPR 0 2
+20 STO 0 -4
 21 RET 0 0
 22 INT 0 1
-23 CAL 0 9
-24 INT 0 1
-25 CAL 0 9
-26 RET 0 0
+23 LIT 0 99999
+24 STO 0 4
+25 INT 0 1
+26 INT 0 1
+27 LOD 0 4
+28 LIT 0 30
+29 LIT 0 40
+30 CAL 0 2
+31 INT 0 -3
+32 STO 0 5
+33 RET 0 0
 """, code, "func")
 
     def test_func_very_simple(self):
@@ -202,20 +231,21 @@ class Test(TestCase):
 1 INT 0 1
 2 LIT 0 555
 3 STO 0 3
-4 JMP 0 13
-5 INT 0 4
+4 JMP 0 14
+5 INT 0 3
 6 LOD 0 -1
 7 LIT 0 111
-8 LOD 1 3
+8 LOD 0 3
 9 OPR 0 2
-10 STO 1 3
-11 STO 0 0
-12 RET 0 0
-13 INT 0 1
+10 STO 0 3
+11 LOD 0 3
+12 STO 0 -2
+13 RET 0 0
 14 INT 0 1
-15 LOD 0 3
-16 CAL 0 5
-17 INT 0 -1
-18 STO 0 6
-19 RET 0 0
+15 INT 0 1
+16 LOD 0 3
+17 CAL 0 5
+18 INT 0 -1
+19 STO 0 5
+20 RET 0 0
 """, code, "func_very_simple")
