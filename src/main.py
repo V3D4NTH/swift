@@ -6,7 +6,7 @@ from copy import copy
 
 import ply.lex
 import ply.yacc as yy
-from ete3 import TreeStyle
+# from ete3 import TreeStyle
 
 import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical

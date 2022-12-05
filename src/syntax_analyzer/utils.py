@@ -32,8 +32,6 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3)
     """
         It generates a table of symbols
         """
-    symbols = symbols
-    level = level
     index = 0
     while index < len(symbols):
         ancestor = symbols[index].get_ancestors()[0]

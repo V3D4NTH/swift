@@ -107,7 +107,7 @@ class Pl0Const:
         """
         does nothing
         """
-        raise NotImplementedError("Method not yet implemented.")
+        pass
 
     def gen_term(self, operator):
         """

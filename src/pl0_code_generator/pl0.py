@@ -119,6 +119,14 @@ class Pl0(Pl0Const):
             index += 1
 
     def gen_loop_block(self, sub_tree, index, symbol_table=None, level=0):
+        """
+        It generates the code for a for loop block
+
+        :param sub_tree: The subtree of the AST that represents the loop block
+        :param index: the index of the current node in the tree
+        :param symbol_table: The symbol table that is being used to store the variables
+        :param level: the level of indentation, defaults to 0 (optional)
+        """
         loop_var = sub_tree[index].children[0].children[1]
         condition = sub_tree[index].children[1]
         loop_step = sub_tree[index].children[2]
@@ -460,9 +468,6 @@ class Pl0(Pl0Const):
 
     def gen_divby(self, operator):
         self.generate_instruction(inst(Inst.opr), 0, op(Op.div))
-
-    def gen_equals(self, operator):
-        pass
 
     def gen_lesser(self):
         self.generate_instruction(inst(Inst.opr), 0, op(Op.lt))
