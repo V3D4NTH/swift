@@ -7,7 +7,7 @@ from ply import lex
 
 # A list of keywords that are used in the language.
 keywords = (
-    'let', 'var', 'func', 'for', 'while', 'return', 'if', 'else', 'and', 'or'
+    'let', 'var', 'func', 'for', 'return', 'if', 'else', 'and', 'or','while','repeat'
 )
 
 # A list of tokens that the lexer will recognize.

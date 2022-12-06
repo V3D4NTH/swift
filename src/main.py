@@ -12,7 +12,7 @@ import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
 from src.syntax_analyzer.utils import generate_table_of_symbols
-
+from src.semantics_analyzer.analyzer import Analyzer
 
 def generate_output_files(dst, generated_code):
     if "output" not in os.listdir("../"):
@@ -44,10 +44,17 @@ def main(input_file_name: str):
     ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=True)
     dst = y.parse(code)
-
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
+
+    semantics_analyzer = Analyzer(dst,table_of_symbols)
+    if not semantics_analyzer.Analyze():
+        return
+
+
+
+
     generated_code = gen.Pl0(dst, table_of_symbols)
 
     # Generating the output files.
@@ -79,4 +86,4 @@ def main(input_file_name: str):
 
 
 if __name__ == '__main__':
-    main("../sample_input/program.swift")
+    main("../sample_input/repeat.swift")

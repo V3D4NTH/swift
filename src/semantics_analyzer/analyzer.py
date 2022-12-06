@@ -1,4 +1,9 @@
 # class responsible from semantical analysis
-#TODO
 class Analyzer:
-    pass
+    def __init__(self,dst,symbol_table):
+        self.__dst = dst
+        self.__symbol_table = symbol_table
+
+    def Analyze(self) -> bool:
+
+        return True

@@ -112,13 +112,26 @@ class Pl0(Pl0Const):
             elif sub_tree[index].name == "return_statement":
                 index, level = self.generate_code_again(index, level, symbol_table, sub_tree[index].children[0])
 
-            elif sub_tree[index].name == "loop_block":
-                index, level = self.gen_loop_block(sub_tree, index, level=level,
-                                                   symbol_table=symbol_table)
+            elif sub_tree[index].name == "for_loop_block":
+                index, level = self.gen_for_loop_block(sub_tree, index, level=level,
+                                                       symbol_table=symbol_table)
+            elif sub_tree[index].name == "while_loop_block":
+                pass
+            elif sub_tree[index].name == "repeat_loop_block":
+                pass
+
             #  update index
             index += 1
 
-    def gen_loop_block(self, sub_tree, index, symbol_table=None, level=0):
+    # TODO new loop
+    def gen_while_loop_block(self, sub_tree, index, symbol_table=None, level=0):
+        pass
+
+    # TODO new loop
+    def gen_repeat_loop_block(self, sub_tree, index, symbol_table=None, level=0):
+        pass
+
+    def gen_for_loop_block(self, sub_tree, index, symbol_table=None, level=0):
         """
         It generates the code for a for loop block
 

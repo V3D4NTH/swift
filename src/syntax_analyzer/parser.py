@@ -260,12 +260,21 @@ def p_block(p):
         p[0] = make_node('block_statement',[p[1]])
 
 
-# loop statement, only for cycle for now, will be expanded in future
+# loop statement, for / while cycle
 def p_loop_block(p):
     """
     loop_block : for lparent loop_var condition semicolon step semicolon rparent comp_block
+    |           while condition comp_block
+    |           repeat comp_block while condition
+
     """
-    p[0] = make_node('loop_block', [p[3], p[4], p[6], p[9]])
+    if len(p) == 10:
+        p[0] = make_node('for_loop_block', [p[3], p[4], p[6], p[9]])
+    elif len(p) == 4:
+        p[0] = make_node('while_loop_block', [p[2], p[3]])
+    elif len(p) == 5:
+        p[0] = make_node('repeat_loop_block', [p[2], p[4]])
+
 
 
 # condition block, if or if else statement. Switch-case might be added in future
