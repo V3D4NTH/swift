@@ -6,7 +6,7 @@
 from ete3 import Tree
 
 from src.lex_analyzer.lexer import tokens
-from src.syntax_analyzer.utils import make_node
+from src.syntax_analyzer.utils import make_node,is_integer,get_integer_node_value
 
 """
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
@@ -18,10 +18,10 @@ TODO JT debug pravidel gramatiky
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
 # the cfg is ambigous, therefore precende must be defined
 precedence = (
-    ('nonassoc','lt','gt','le','ge','equals_equals'),
-    ('left', 'plus', 'minus','var','let'),
+    ('nonassoc', 'lt', 'gt', 'le', 'ge', 'equals_equals'),
+    ('left', 'plus', 'minus', 'var', 'let'),
     ('left', 'multiply', 'divide'),
-    ('right','uminus'),
+    ('right', 'uminus'),
 )
 
 
@@ -46,22 +46,23 @@ def p_dekl_list(p):
 
     """
     n = len(p)
-    #block or single declaration
+    # block or single declaration
     if n == 2:
-        p[0] = make_node('declaration',[p[1]])
-    #modification of existing variable
+        p[0] = make_node('declaration', [p[1]])
+    # modification of existing variable
     elif n == 4:
-        p[0] = make_node('var_modification_dekl',[p[1],p[3]])
-    #expression, modification or declaration list
+        p[0] = make_node('var_modification_dekl', [p[1], p[3]])
+    # expression, modification or declaration list
     elif n == 3:
-        #expression or modification
+        # expression or modification
         if p[2] == ";":
-            p[0] = make_node('statement',[p[1]])
-        #declaration list
+            p[0] = make_node('statement', [p[1]])
+        # declaration list
         else:
-            p[0] = make_node('declaration_list',[p[1],p[2]])
+            p[0] = make_node('declaration_list', [p[1], p[2]])
 
-#modification of existing variable
+
+# modification of existing variable
 def p_var_modification(p):
     """
     var_modification : id sub expression
@@ -71,8 +72,7 @@ def p_var_modification(p):
                      | id equals expression
     """
 
-    p[0] = make_node("var_modification",[p[1],p[2],p[3]])
-
+    p[0] = make_node("var_modification", [p[1], p[2], p[3]])
 
 
 # declaration statement
@@ -121,9 +121,15 @@ def p_expression(p):
     if len(p) == 2:
         p[0] = make_node('expression_term', [p[1]])
     elif p[2] == '+':
-        p[0] = make_node('expression_sum', [p[1], p[3]])
+        if is_integer(p[1]) and is_integer(p[3]):
+            p[0] = make_node('const_expression_term',[get_integer_node_value(p[1])+get_integer_node_value(p[3])])
+        else:
+            p[0] = make_node('expression_sum', [p[1], p[3]])
     elif p[2] == '-':
-        p[0] = make_node('expression_minus', [p[1], p[3]])
+        if is_integer(p[1]) and is_integer(p[3]):
+            p[0] = make_node('const_expression_minus', [get_integer_node_value(p[1]) - get_integer_node_value(p[3])])
+        else:
+            p[0] = make_node('expression_minus', [p[1], p[3]])
 
 
 def p_term(p):
@@ -135,9 +141,17 @@ def p_term(p):
     if len(p) == 2:
         p[0] = make_node('factor', [p[1]])
     elif p[2] == '*':
-        p[0] = make_node('expression_multiply', [p[1], p[3]])
+        #pokud jsou to cisla, zvladnu to vyhodnotit pri prekladu
+        if is_integer(p[1]) and is_integer(p[3]):
+            p[0] = make_node('const_expression_term',[get_integer_node_value(p[1]) * get_integer_node_value(p[3])])
+        #jinak nemam tucha, co to je za vysledek
+        else:
+            p[0] = make_node('expression_multiply', [p[1], p[3]])
     elif p[2] == '/':
-        p[0] = make_node('expression_divide', [p[1], p[3]])
+        if is_integer(p[1]) and is_integer(p[3]):
+            p[0] = make_node('const_expression_term', [get_integer_node_value(p[1]) // get_integer_node_value(p[3])])
+        else:
+            p[0] = make_node('expression_divide', [p[1], p[3]])
 
 
 def p_factor(p):
@@ -150,7 +164,10 @@ def p_factor(p):
     if len(p) == 4:
         p[0] = make_node('expression_in_parent', [p[2]])
     elif len(p) == 3:
-        p[0] = make_node('unary_minus', [p[1],p[2]])
+        if is_integer(p[2]):
+            p[0] = make_node('const_expression_term',[-get_integer_node_value(p[2])])
+        else:
+            p[0] = make_node('unary_minus', [p[1], p[2]])
     elif len(p) == 2:
         p[0] = make_node('factor_expression', [p[1]])
 
@@ -167,16 +184,29 @@ def p_call(p):
     """
     call : id lparent arguments rparent
     """
-    p[0] = make_node('function_call', [p[1],p[3]])
+    p[0] = make_node('function_call', [p[1], p[3]])
 
 
-# generic rule for value, that is integer or identifier
-def p_val(p):
+# value assignment is integer
+def p_val_num(p):
     """
     val : int
-    |   id
     """
-    p[0] = make_node('var_value', [p[1]])
+    # vim, ze mi prisel int, castnu to ze stringu na int
+    try:
+        value = int(p[1])
+    except OverflowError:
+        print("Out of bounds")
+        value = 0
+    p[0] = make_node('var_value', [value])
+
+
+# value assignment is an identifier
+def p_val_id(p):
+    """
+    val : id
+    """
+    p[0] = make_node('var_value', [ p[1] ])
 
 
 # rule for function declaration make_node contains operation and val, val contains the relevant information about
@@ -207,9 +237,10 @@ def p_params_var(p):
                | id ddot dtype
     """
     if len(p) == 6:
-        p[0] = make_node('parameters_declaration_list',[p[1],p[3],p[5]])
+        p[0] = make_node('parameters_declaration_list', [p[1], p[3], p[5]])
     elif len(p) == 4:
-        p[0] = make_node('parameter_declaration',[p[1],p[3]])
+        p[0] = make_node('parameter_declaration', [p[1], p[3]])
+
 
 # function arguments rule, multiple values separated by comma
 def p_arguments(p):
@@ -219,9 +250,10 @@ def p_arguments(p):
     | empty
     """
     if len(p) == 4:
-        p[0] = make_node('arguments_list',[p[1],p[3]])
+        p[0] = make_node('arguments_list', [p[1], p[3]])
     elif len(p) == 2:
-        p[0] = make_node('argument',[p[1]])
+        p[0] = make_node('argument', [p[1]])
+
 
 # compound block rule, ie {<block>}
 def p_comp_block(p):
@@ -253,11 +285,11 @@ def p_block(p):
     elif n == 3 and p[2] != ';':
         p[0] = make_node('block', [p[1], p[2]])
     elif n == 4 and p[1] == "var" or p[1] == "let":
-        p[0] = make_node('block_var_dekl', [p[1],p[2], p[3]])
+        p[0] = make_node('block_var_dekl', [p[1], p[2], p[3]])
     elif n == 4:
-        p[0] = make_node('expression',[p[1],p[3]])
+        p[0] = make_node('expression', [p[1], p[3]])
     elif n == 2 or (n == 3 and p[2] == ';'):
-        p[0] = make_node('block_statement',[p[1]])
+        p[0] = make_node('block_statement', [p[1]])
 
 
 # loop statement, for / while cycle
@@ -274,7 +306,6 @@ def p_loop_block(p):
         p[0] = make_node('while_loop_block', [p[2], p[3]])
     elif len(p) == 5:
         p[0] = make_node('repeat_loop_block', [p[2], p[4]])
-
 
 
 # condition block, if or if else statement. Switch-case might be added in future
@@ -296,7 +327,7 @@ def p_loop_var(p):
     | id semicolon
     """
     if p[2] != ";":
-        p[0] = make_node('loop_var', [p[1],p[2]])
+        p[0] = make_node('loop_var', [p[1], p[2]])
     else:
         p[0] = make_node('loop_var', [p[1]])
 

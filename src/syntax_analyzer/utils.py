@@ -27,6 +27,15 @@ def make_node(node_name: str, children=None) -> Tree:
             ast.add_child(name=i)
     return ast
 
+# wrapper function that checks if node represents numerical value
+# returns true if leaf is an integer
+def is_integer(node):
+    return isinstance(node.get_leaf_names()[0],int)
+#todo stupid reseni, prepsat
+def get_integer_node_value(node):
+    return node.get_leaf_names()[0]
+
+
 
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3):
     """
