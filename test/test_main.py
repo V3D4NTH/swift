@@ -19,11 +19,9 @@ class Test(TestCase):
         self.assertEqual(
             """0 INT 0 3
 1 INT 0 1
-2 LIT 0 222
-3 LIT 0 333
-4 OPR 0 2
-5 STO 0 3
-6 RET 0 0
+2 LIT 0 555
+3 STO 0 3
+4 RET 0 0
 """, code, "operation")
 
     def test_declaration(self):
@@ -33,16 +31,14 @@ class Test(TestCase):
         code = main("../sample_input/declaration.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
-2 LIT 0 222
-3 LIT 0 333
-4 OPR 0 2
-5 STO 0 3
-6 INT 0 1
-7 LOD 0 3
-8 LIT 0 10
-9 OPR 0 2
-10 STO 0 4
-11 RET 0 0
+2 LIT 0 555
+3 STO 0 3
+4 INT 0 1
+5 LOD 0 3
+6 LIT 0 10
+7 OPR 0 2
+8 STO 0 4
+9 RET 0 0
 """, code, "operation")
 
     def test_operators(self):
@@ -55,18 +51,14 @@ class Test(TestCase):
 2 LIT 0 40
 3 STO 0 3
 4 INT 0 1
-5 LIT 0 10
-6 LIT 0 20
-7 OPR 0 4
-8 LIT 0 30
-9 OPR 0 2
-10 LOD 0 3
-11 OPR 0 3
-12 STO 0 4
-13 INT 0 1
-14 LIT 0 60
-15 STO 0 5
-16 RET 0 0
+5 LIT 0 230
+6 LOD 0 3
+7 OPR 0 3
+8 STO 0 4
+9 INT 0 1
+10 LIT 0 60
+11 STO 0 5
+12 RET 0 0
 """, code, "operators")
 
     def test_if(self):
