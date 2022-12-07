@@ -116,20 +116,61 @@ class Pl0(Pl0Const):
                 index, level = self.gen_for_loop_block(sub_tree, index, level=level,
                                                        symbol_table=symbol_table)
             elif sub_tree[index].name == "while_loop_block":
-                pass
+                index, level = self.gen_while_loop_block(sub_tree, index, level=level,
+                                                       symbol_table=symbol_table)
             elif sub_tree[index].name == "repeat_loop_block":
-                pass
+                index, level = self.gen_repeat_loop_block(sub_tree, index, level=level,
+                                                         symbol_table=symbol_table)
 
             #  update index
             index += 1
 
-    # TODO new loop
     def gen_while_loop_block(self, sub_tree, index, symbol_table=None, level=0):
-        pass
+        """
+        It generates the code for a while loop block
 
-    # TODO new loop
+        :param sub_tree: the subtree of the AST that represents the while loop
+        :param index: the index of the current node in the tree
+        :param symbol_table: the symbol table that is passed down from the parent block
+        :param level: the level of indentation, defaults to 0 (optional)
+        """
+        condition = sub_tree[index].children[0]
+        body = sub_tree[index].children[1]
+
+        start_address = len(self.code)
+        _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
+
+        x = id("x" + str(level))
+        self.generate_instruction(inst(Inst.jmc), 0, x)
+
+        index, level = self.generate_code_again(index, level, symbol_table, body)
+        for i in self.code:
+            if i[2] == x:
+                jmc_address = len(self.code)
+
+                i[2] = jmc_address + 1
+        self.generate_instruction(inst(Inst.jmp), 0, start_address)
+        return index, level
+
     def gen_repeat_loop_block(self, sub_tree, index, symbol_table=None, level=0):
-        pass
+        """
+        This function generates the code for a repeat loop block
+
+        :param sub_tree: The subtree of the AST that represents the repeat loop
+        :param index: the index of the current node in the tree
+        :param symbol_table: the symbol table for the current scope
+        :param level: the level of indentation, defaults to 0 (optional)
+        """
+        condition = sub_tree[index].children[1]
+        body = sub_tree[index].children[0]
+
+        start_address = len(self.code)
+        index, level = self.generate_code_again(index, level, symbol_table, body)
+
+        _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
+        self.generate_instruction(inst(Inst.jmc), 0, len(self.code) + 2)
+        self.generate_instruction(inst(Inst.jmp), 0, start_address)
+        return index, level
 
     def gen_for_loop_block(self, sub_tree, index, symbol_table=None, level=0):
         """
