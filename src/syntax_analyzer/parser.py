@@ -127,7 +127,7 @@ def p_expression(p):
             p[0] = make_node('expression_sum', [p[1], p[3]])
     elif p[2] == '-':
         if is_integer(p[1]) and is_integer(p[3]):
-            p[0] = make_node('const_expression_minus', [get_integer_node_value(p[1]) - get_integer_node_value(p[3])])
+            p[0] = make_node('const_expression_term', [get_integer_node_value(p[1]) - get_integer_node_value(p[3])])
         else:
             p[0] = make_node('expression_minus', [p[1], p[3]])
 
