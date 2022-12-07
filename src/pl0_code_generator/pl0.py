@@ -251,11 +251,14 @@ class Pl0(Pl0Const):
         :param level: the level of the current scope, defaults to 0 (optional)
         """
         self.generate_instruction(inst(Inst.int), 0, 1)
+        name = sub_tree[index].children[0].name
         sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
+        if sub_tree[index].children[2].name == "const_expression_term":
+            index += 2
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-        self.store_var(symbol_table[sub_tree[index].children[0].name])
+        self.store_var(symbol_table[name])
         index += len(sub_sub_tree)
         return index, level
 
@@ -381,6 +384,9 @@ class Pl0(Pl0Const):
                 parent = sub_tree[0].get_common_ancestor(sub_sub_tree, leaves[i])
                 self.expressions[parent.name](leaf_names[i], symbol_table=symbol_table)
             index += len(sub_tree)
+
+        elif sub_tree[index].name == "const_expression_term":
+            self.expressions[sub_tree[index].name](leaf_names[0], symbol_table=symbol_table)
 
         elif sub_tree[index].name == "expression_term":
             self.expressions[sub_tree[index].name](leaf_names[0], symbol_table=symbol_table)

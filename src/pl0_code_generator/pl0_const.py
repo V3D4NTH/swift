@@ -19,7 +19,7 @@ class Pl0Const:
         # A dictionary that maps the operators to the functions that generate the code for the operators.
         self.expressions = {"expression_sum": self.gen_opr_add, "expression_minus": self.gen_opr_sub,
                             "expression_multiply": self.gen_opr_mul, "expression_divide": self.gen_opr_div,
-                            "expression_term": self.gen_term}
+                            "expression_term": self.gen_term, "const_expression_term": self.gen_term}
 
         # A dictionary that maps the operators to the functions that generate the code for the operators.
         self.var_modifications = {"-=": self.gen_sub, "+=": self.gen_add, "*=": self.gen_mulby,
