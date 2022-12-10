@@ -102,6 +102,8 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[level].locals[symbols[index].name].const = True
             else:
+                if symbols[index].name in symbol_table.keys():
+                    raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
                 symbol_table[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                   symbol_type=symbols[index].get_sisters()[0].
                                                                   children[0].name,
@@ -112,4 +114,3 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                     symbol_table[symbols[index].name].const = True
             address += 1
         index += 1
-    # create_levels(symbol_table)
