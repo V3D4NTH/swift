@@ -3,11 +3,17 @@ var b : Int = someOtherFunction2(43);
 a = someOtherFunction3(a,b);
 b = someComplexFunction(42,42,42,42);
 
-func someOtherFunction(b: Int) -> Int{
-    for(var j: Int = 1; j < 32*42; j+= 1;){
-        b *= j;
+
+func someOtherFunction(a: Int) -> Int{
+    var b: Int = 20;
+    if( 52 > 43){
+        var a: Int = 20;
+        a = 20;
+        b *= 32;
     }
-    return b;
+    else {
+        b -= 4;
+    }
 }
 func someOtherFunction2(a:Int) -> Int{
     for(var j: Int = 0; j < 32*42; j+= 1;){

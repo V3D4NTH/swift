@@ -36,8 +36,15 @@ def get_integer_node_value(node):
     return node.get_leaf_names()[0]
 
 
+def find_real_level(symbols, index):
+    real_level_result = 0
+    for i in symbols[index].get_ancestors():
+        if i.name == "compound_block":
+            real_level_result += 1
+    return real_level_result
 
-def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3):
+
+def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level=0, address=3, index=0):
     """
         It generates a table of symbols
         """
@@ -45,6 +52,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3)
     while index < len(symbols):
         ancestor = symbols[index].get_ancestors()[0]
         if ancestor.name == "function_signature":
+            real_level = find_real_level(symbols, index)
             if symbols[index].name in symbol_table.keys():
                 raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
             params = {}
@@ -56,11 +64,12 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3)
                         raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
                     params[ids_and_types[i]] = (
                         SymbolRecord(ids_and_types[i], ids_and_types[i + 1], param=True, level=level,
+                                     real_level=real_level,
                                      address=local_address))
                     local_address += 1
             func_name = symbols[index].name
             symbol_table[func_name] = (
-                SymbolRecord(symbols[index].name, "func", params=params, level=level,
+                SymbolRecord(symbols[index].name, "func", params=params, level=level, real_level=real_level,
                              address=address,
                              return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
             address += 1
@@ -68,24 +77,27 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3)
             # shifting index to skip duplicates
             index += len(func_body)
             # recursive call
-            generate_table_of_symbols(symbol_table, level=symbol_table[func_name].name,
-                                      symbols=func_body, address=local_address)
+            generate_table_of_symbols(symbol_table, level=symbol_table[func_name].name, real_level=real_level,
+                                      symbols=func_body, address=local_address, index=index)
         if ancestor.name == "var_declaration_expression":
-            if symbols[index].name in symbol_table.keys() and symbol_table[symbols[index].name].level == "0":
-                raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
+            real_level = find_real_level(symbols, index)
             if level != "0" and symbol_table[level].locals is None:
                 symbol_table[level].locals = {symbols[index].name: (SymbolRecord(symbols[index].name,
                                                                                  symbol_type=
                                                                                  symbols[index].get_sisters()[0].
                                                                                  children[0].name,
                                                                                  level=level,
+                                                                                 real_level=real_level,
                                                                                  address=address))}
+                if ancestor.get_sisters()[0].name == "let":
+                    symbol_table[symbols[index].name].const = True
             elif level != "0" and symbols[index].name not in symbol_table[level].locals.keys():
                 symbol_table[level].locals[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                                 symbol_type=
                                                                                 symbols[index].get_sisters()[0].
                                                                                 children[0].name,
                                                                                 level=level,
+                                                                                real_level=real_level,
                                                                                 address=address))
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[level].locals[symbols[index].name].const = True
@@ -94,6 +106,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", address=3)
                                                                   symbol_type=symbols[index].get_sisters()[0].
                                                                   children[0].name,
                                                                   level=level,
+                                                                  real_level=real_level,
                                                                   address=address))
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[symbols[index].name].const = True

@@ -159,7 +159,7 @@ class Pl0Const:
 # This class is used to store information about a symbol in table
 class SymbolRecord:
 
-    def __init__(self, name, symbol_type, const=False, level=0, address=3, size=0,
+    def __init__(self, name, symbol_type, const=False, level=0, real_level=0, address=3, size=0,
                  params=None, return_type=None, param=False, locals_vars=None):
         """
         This function initializes the symbol record
@@ -179,6 +179,7 @@ class SymbolRecord:
         self.type = symbol_type
         self.const = const
         self.level = level
+        self.real_level = real_level
         self.address = address
         self.size = size
         self.param = param
@@ -192,6 +193,7 @@ class SymbolRecord:
         ret_val += "--------record------\n"
         ret_val += (str(self.id) + "\t|" + "id\n")
         ret_val += (str(self.name) + "\t\t\t\t|" + "name\n")
+        ret_val += (str(self.real_level) + "\t\t\t\t|" + "real_level\n")
         ret_val += (str(self.type) + "\t\t\t|" + "symbol_type\n")
         ret_val += (str(self.const) + "\t\t\t|" + "const\n")
         ret_val += (str(self.level) + "\t\t\t\t|" + "level\n")

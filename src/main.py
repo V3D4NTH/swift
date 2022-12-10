@@ -48,7 +48,7 @@ def main(input_file_name: str):
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
 
-    semantics_analyzer = Analyzer(dst,table_of_symbols)
+    semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
         return
 
