@@ -90,7 +90,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                  real_level=real_level,
                                                                                  address=address))}
                 if ancestor.get_sisters()[0].name == "let":
-                    symbol_table[symbols[index].name].const = True
+                    symbol_table[level].locals[symbols[index].name].const = True
             elif level != "0" and symbols[index].name not in symbol_table[level].locals.keys():
                 symbol_table[level].locals[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                                 symbol_type=
