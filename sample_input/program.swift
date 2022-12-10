@@ -1,32 +1,29 @@
-let a : Int = 52;
-let b : Int = 43;
+var a : Int = someOtherFunction(52);
+var b : Int = someOtherFunction2(43);
+a = someOtherFunction3(a,b);
+b = someComplexFunction(42,42,42,42);
+
 func someOtherFunction(b: Int) -> Int{
     for(var j: Int = 1; j < 32*42; j+= 1;){
         b *= j;
     }
-
+    return b;
 }
 func someOtherFunction2(a:Int) -> Int{
     for(var j: Int = 0; j < 32*42; j+= 1;){
         a += j * 5;
     }
+    return a;
 }
 func someOtherFunction3(a:Int, b:Int) -> Int{
     var c: Int = 0;
     for(var j: Int = 0; j < 32*42; j+= 1;){
-        someOtherFunction();
-        someOtherFunction2();
+        a += 1;
+        b += 2;
     }
     return a;
 
 }
-
-
-
-
-
-someOtherFunction3(a,b);
-
 
 func someComplexFunction(A: Int, B: Int, C: Int, D: Int)->Int {
     var someResult : Int = 42;
@@ -41,9 +38,6 @@ func someComplexFunction(A: Int, B: Int, C: Int, D: Int)->Int {
     }
     return someResult;
 }
-
-someComplexFunction(42,42,42,42);
-
 
 if( 52 > 43){
     a *= 32;

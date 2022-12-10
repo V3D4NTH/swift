@@ -86,4 +86,4 @@ def main(input_file_name: str):
 
 
 if __name__ == '__main__':
-    main("../sample_input/repeat.swift")
+    main("../sample_input/program.swift")
