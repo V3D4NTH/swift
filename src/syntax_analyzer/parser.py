@@ -12,7 +12,6 @@ from src.syntax_analyzer.utils import make_node,is_integer,get_integer_node_valu
 syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
 hodne work in progess
 lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
-TODO JT debug pravidel gramatiky
 """
 
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
@@ -43,7 +42,6 @@ def p_dekl_list(p):
               | var_modification semicolon dekl_list
               | dekl dekl_list
               | block
-
     """
     n = len(p)
     # block or single declaration
@@ -117,6 +115,7 @@ def p_expression(p):
     expression : expression minus term
     | expression plus term
     | term
+    | ternary
     """
     if len(p) == 2:
         p[0] = make_node('expression_term', [p[1]])
@@ -131,6 +130,12 @@ def p_expression(p):
         else:
             p[0] = make_node('expression_minus', [p[1], p[3]])
 
+def p_ternary(p):
+    """
+    ternary : condition question_mark expression ddot expression
+    """
+    p[0] = make_node("ternary_operator",[p[1],p[3],p[5]])
+
 
 def p_term(p):
     """
@@ -144,7 +149,7 @@ def p_term(p):
         #pokud jsou to cisla, zvladnu to vyhodnotit pri prekladu
         if is_integer(p[1]) and is_integer(p[3]):
             p[0] = make_node('const_expression_term',[get_integer_node_value(p[1]) * get_integer_node_value(p[3])])
-        #jinak nemam tucha, co to je za vysledek
+        #inak nemam tucha, co to je za vysledek
         else:
             p[0] = make_node('expression_multiply', [p[1], p[3]])
     elif p[2] == '/':
@@ -188,6 +193,7 @@ def p_call(p):
 
 
 # value assignment is integer
+#todo when boolean -> true|false
 def p_val_num(p):
     """
     val : int

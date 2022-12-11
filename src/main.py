@@ -43,7 +43,8 @@ def main(input_file_name: str):
     lexer = \
     ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=True)
-    dst = y.parse(code)
+    dst = y.parse(formatted_input_code)
+
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
@@ -86,4 +87,5 @@ def main(input_file_name: str):
 
 
 if __name__ == '__main__':
-    main("../sample_input/program.swift")
+    main("../sample_input/not_tested/func.swift")
+    #main("../sample_input/program.swift")

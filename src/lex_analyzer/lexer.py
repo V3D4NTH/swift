@@ -14,7 +14,9 @@ keywords = (
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby','uminus'
+    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby',
+    'uminus', 'question_mark'
+
 )
 
 reserved_set = set(tokens)
@@ -58,9 +60,8 @@ def t_id(t):
 
 # token newline -> inkrementuj line number
 def t_newline(t):
-    r'\n'
-    t.lexer.lineno += 1
-    t.lexer.skip(1)
+    r'\n+'
+    t.lexer.lineno += t.value.count("\n")
 
 
 # neznamy token, zahlas chybu
@@ -79,16 +80,10 @@ def t_int(t):
         t.lexer.skip(1)
     return t
 
-
-# todo
-# booleany - mozna lepsi narvat tam 1 if t.value is true else 0
+#boolean data type, 1 stands for true
 def t_bool(t):
     r'true|false'
-    t.value = bool(t.value)
-
-
-# tokeny popsane reg. vyrazy
-
+    t.value = 1 if t.value == "true" else 0
 
 # Defining the tokens that the lexer will recognize.
 t_equals = r'='
@@ -115,5 +110,6 @@ t_rcparent = r'\}'
 t_lcparent = r'\{'
 t_ddot = r'\:'
 t_comma = r'\,'
+t_question_mark = r'\?'
 # Telling the lexer to ignore spaces and tabs.
-t_ignore = r' \t'
+t_ignore = " \t"
