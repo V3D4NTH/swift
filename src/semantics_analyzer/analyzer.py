@@ -1,6 +1,9 @@
 # class responsible from semantical analysis
 # TODO type checking, scope checking, semantics of the program
 # TODO scopes
+from numpy.testing._private.parameterized import param
+
+
 class Analyzer:
     def __init__(self, dst, symbol_table):
         self.__dst = dst
@@ -89,6 +92,7 @@ class Analyzer:
         if not data_type_valid:
             print(f"Invalid data type {data_type.name}, allowed data types: {self.__data_types}")
             return False
+        data_type = data_type.get_children()[0]
         expression = children[2]
         # type_operation_valid = self.__check_type_value_compatibility(data_type.name,expression)
         expression_valid = self.__eval_node(expression)
@@ -121,10 +125,14 @@ class Analyzer:
             return False
 
         factor_expression_valid = self.__eval_node(children[1])
-
         if not factor_expression_valid:
             print(f"Invalid value in multiplication expression")
             return False
+        subsubtree_value = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        if subtree_value[1] != subsubtree_value[1]:
+            print(f"Type mismatch, cannot multiply types: {subsubtree_value[1]}, {subsubtree_value[1]}")
+            return False
+
 
         return True
 
@@ -165,8 +173,15 @@ class Analyzer:
         if not is_valid_identifier:
             print(f"Function {function_name} is not declared")
             return False
-        #TODO check arguments
-        return True
+        function_prototype = self.__identifier_table_entry
+        function_arguments = children[1]
+
+        function_params = function_prototype.params
+        function_call_ok = self.__check_function_call(function_params,function_arguments)
+        if not function_call_ok:
+            print(f"Error when calling a function {function_name}")
+        self.__subtree_leaf_value, self.__subtree_leaf_dtype = function_prototype.name, function_prototype.return_type
+        return function_call_ok
 
     def __eval_data_type(self, node):
         data_type = node.get_children()[0]
@@ -177,6 +192,62 @@ class Analyzer:
     # mark node as visited
     def __mark_visited(self, node):
         self.__visited_nodes.add(node)
+
+
+
+    def __check_function_call(self,function_params,function_arguments):
+        tmp = list(function_params.keys())
+        walker = 0
+        param_count = len(tmp)
+        kiddos = function_arguments.get_children()
+        #argument list
+        if len(kiddos) == 2:
+            while True:
+                if walker >= param_count:
+                    print(f"Too many arguments, expected {param_count}, got at least {walker}")
+                    return False
+
+                #single argument
+                if len(kiddos) == 1:
+                    kiddos = kiddos[0]
+                    break
+                argument_ok = self.__compare_argument_and_parameter(kiddos[0], function_params[tmp[walker]])
+                if not argument_ok:
+                    return False
+                self.__mark_visited(kiddos[1])
+                kiddos = kiddos[1].get_children()
+                walker += 1
+        #single argument of function
+        else:
+            kiddos = kiddos[0]
+            # no arguments provided
+            if kiddos.name == '':
+                if param_count != 0:
+                    print(f"No arguments provided in function call, expected {param_count} arguments")
+                    return False
+                return True
+
+        argument = kiddos
+        argument_ok = self.__compare_argument_and_parameter(argument, function_params[tmp[walker]])
+        walker += 1
+        if walker != param_count:
+            print(f"Invalid number of argument in function call, expected {param_count}, instead got {walker}")
+            return False
+
+        return argument_ok
+
+    def __compare_argument_and_parameter(self,argument,parameter):
+        value_ok = self.__eval_node(argument)
+        if not value_ok:
+            return False
+        argument_type = self.__subtree_leaf_dtype
+        function_param_type = parameter.type
+        if function_param_type != argument_type:
+            print(f"Argument missmatch, expected argument with type {function_param_type} for parameter {parameter.name},\
+             instead got argument with type {argument_type}")
+            return False
+        return True
+
 
     def __check_identifier(self, identifier, scope):
         # im inside some scope, not a global one, check my existence there first

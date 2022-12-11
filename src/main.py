@@ -48,11 +48,12 @@ def main(input_file_name: str):
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
+    '''
     #[JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
-    #semantics_analyzer = Analyzer(dst, table_of_symbols)
-    #if not semantics_analyzer.Analyze():
-    #    return
-
+    semantics_analyzer = Analyzer(dst, table_of_symbols)
+    if not semantics_analyzer.Analyze():
+        return
+    '''
 
 
 
