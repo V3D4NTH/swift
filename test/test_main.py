@@ -273,3 +273,24 @@ class Test(TestCase):
 19 STO 0 5
 20 RET 0 0
 """, code, "func_very_simple")
+
+    def test_ternary_operator(self):
+        code = main("../sample_input/ternary_operator.swift")
+        self.assertEqual("""0 INT 0 3
+1 INT 0 1
+2 LIT 0 100
+3 STO 0 3
+4 LOD 0 3
+5 LIT 0 43
+6 OPR 0 10
+7 JMC 0 12
+8 LOD 0 3
+9 LIT 0 9
+10 OPR 0 2
+11 JMP 0 15
+12 LOD 0 3
+13 LIT 0 5
+14 OPR 0 2
+15 STO 0 3
+16 RET 0 0
+""", code, "ternary_operator")

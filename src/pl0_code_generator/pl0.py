@@ -374,7 +374,15 @@ class Pl0(Pl0Const):
 
         leaf_names = sub_tree[index].get_leaf_names()
         leaves = sub_tree[index].get_leaves()
+
         if len(leaf_names) > 2:
+
+            if sub_tree[index].children[0].name == "ternary_operator":
+                index += 1
+                index, level = self.gen_if_else(sub_tree,
+                                                index, level, symbol_table=symbol_table)
+                return index
+
             sub_sub_tree = sub_tree[0].get_common_ancestor(leaves[0], leaves[1])
             # shifting index to skip duplicates
             # recursive call
@@ -433,12 +441,12 @@ class Pl0(Pl0Const):
         condition = sub_tree[index].children[0]
         block1 = sub_tree[index].children[1]
         block2 = None
-        if sub_tree[index].name == "if_else_stmt":
+        if sub_tree[index].name == "if_else_stmt" or sub_tree[index].name == "ternary_operator":
             block2 = sub_tree[index].children[2]
         if condition.children[1].get_leaf_names()[0] in self.cond_expressions:
-            _, index, level = self.gen_condition(condition, index, level)
+            _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
             # block 1
-            sub_sub_tree = self.clear_tree(block1.children[0].iter_prepostorder())
+            sub_sub_tree = self.clear_tree(block1.iter_prepostorder())
             # shifting index to skip duplicates
             # recursive call
             x = id("x" + str(level))
@@ -454,7 +462,7 @@ class Pl0(Pl0Const):
                     i[2] = jmc_address
             if block2 is not None:
                 # block 2
-                sub_sub_tree = self.clear_tree(block2.children[0].iter_prepostorder())
+                sub_sub_tree = self.clear_tree(block2.iter_prepostorder())
                 # shifting index to skip duplicates
                 # recursive call
                 y = id("y" + str(level))
