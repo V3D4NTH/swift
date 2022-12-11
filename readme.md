@@ -12,6 +12,9 @@ School Project: **Not so Swift Language** compiler
 - return value
 - else branch
 - for (c like)
+- while
+- repeat while
+- ternary operator
 -------
 todo
 
@@ -27,9 +30,6 @@ todo
 [//]: # (})
 
 - boolean
-- while
-- repeat while
-- ternary operator
 
 
 
