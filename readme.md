@@ -30,6 +30,7 @@ todo
 [//]: # (})
 
 - boolean
+- closures (lambda expressions)
 
 
 

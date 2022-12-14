@@ -398,6 +398,8 @@ class Pl0(Pl0Const):
 
         elif sub_tree[index].name == "expression_term":
             self.expressions[sub_tree[index].name](leaf_names[0], symbol_table=symbol_table)
+            if sub_tree[index].children[0].name == "const_expression_term":
+                index += len(sub_tree)
         else:
             self.expressions[sub_tree[index].name](leaf_names[0], leaf_names[1], symbol_table=symbol_table)
             index += 2
