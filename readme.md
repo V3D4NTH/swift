@@ -18,16 +18,10 @@ School Project: **Not so Swift Language** compiler
 -------
 todo
 
-[//]: # (- for defined in &#40;https://docs.swift.org/swift-book/LanguageGuide/ControlFlow.html&#41;)
+[comment]: <> (- for defined in https://docs.swift.org/swift-book/LanguageGuide/ControlFlow.html)
 
-[//]: # ()
-[//]: # (for index in 1...5 { )
 
-[//]: # ()
-[//]: # (some code )
-
-[//]: # ()
-[//]: # (})
+[comment]: <> (    for index in 1...5 { some code })
 
 - boolean
 - closures (lambda expressions)
