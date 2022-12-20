@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Not so swift compiler.')
     parser.add_argument('--f_input',
-                        help='path to input file...')
+                        help='path to input file...',  required=True)
     parser.add_argument('--out',  default="./",
                         help='path to output dir...')
 
