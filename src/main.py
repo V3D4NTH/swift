@@ -14,21 +14,25 @@ from src.syntax_analyzer.utils import generate_table_of_symbols
 from src.semantics_analyzer.analyzer import Analyzer
 
 
-def generate_output_files(dst, generated_code):
+def generate_output_files(dst, generated_code, output_dir):
     """
     It generates output files
 
     :param dst: syntax tree
     :param generated_code: a list of strings, each of which is a line of generated code
     """
-    if "output" not in os.listdir("../"):
-        os.mkdir("../output")
-    with open("../output/full_tree.txt", mode="w") as tree:
+    if "output" not in os.listdir(output_dir):
+        if output_dir[-1] != "/":
+            output_dir += "/"
+        os.mkdir(output_dir + "output")
+    output_dir += "output"
+    with open(output_dir + "/full_tree.txt", mode="w") as tree:
         tree.writelines(dst.get_ascii(attributes=["name", "dist", "label", "complex"]))
-    with open("../output/tree.txt", mode="w") as tree:
+    with open(output_dir + "/tree.txt", mode="w") as tree:
         tree.writelines(str(dst))
-    with open("../output/symbol_table.txt", mode="w") as table:
+    with open(output_dir + "/symbol_table.txt", mode="w") as table:
         generated_code.print_symbol_table(table.writelines)
+    return output_dir
 
 
 def visualize_dst(dst, show_tree_with_pyqt5):
@@ -44,7 +48,7 @@ def visualize_dst(dst, show_tree_with_pyqt5):
         )
 
 
-def save_generated_code(generated_code, formatted_input_code):
+def save_generated_code(generated_code, formatted_input_code, output_dir):
     """
     It saves the generated code to a file
 
@@ -53,7 +57,7 @@ def save_generated_code(generated_code, formatted_input_code):
     """
     if generated_code.return_code() != "":
         # Writing the generated code to a file.
-        with open("../output/generated_code.txt", mode="w") as txt:
+        with open(output_dir + "/generated_code.txt", mode="w") as txt:
             txt.writelines("----------input code----------------\n")
             txt.writelines(formatted_input_code)
             txt.writelines("\n")
@@ -62,7 +66,7 @@ def save_generated_code(generated_code, formatted_input_code):
             txt.writelines("------------------------------------")
 
 
-def main(input_file_name: str, show_tree_with_pyqt5=False):
+def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     """
     > This function takes a file name as input, and returns a list of lists of strings
 
@@ -93,7 +97,7 @@ def main(input_file_name: str, show_tree_with_pyqt5=False):
     generated_code = gen.Pl0(dst, table_of_symbols)
 
     # Generating the output files.
-    generate_output_files(dst, generated_code)
+    output_dir = generate_output_files(dst, generated_code, output_dir)
 
     # Showing the tree.
     visualize_dst(dst, show_tree_with_pyqt5)
@@ -102,12 +106,20 @@ def main(input_file_name: str, show_tree_with_pyqt5=False):
     generated_code.generate_instructions()
 
     # Saving the generated code to a file.
-    save_generated_code(generated_code, formatted_input_code)
+    save_generated_code(generated_code, formatted_input_code, output_dir)
 
     return generated_code.return_code()
 
 
 if __name__ == '__main__':
-    # main("../sample_input/not_tested/func.swift")
-    main("../sample_input/program.swift", show_tree_with_pyqt5=True)
-    # main("../sample_input/not_tested/for_in_func.swift")
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Not so swift compiler.')
+    parser.add_argument('--f_input',
+                        help='path to input file...')
+    parser.add_argument('--out',  default="./",
+                        help='path to output dir...')
+
+    args = parser.parse_args()
+
+    main(input_file_name=args.f_input, output_dir=args.out)
