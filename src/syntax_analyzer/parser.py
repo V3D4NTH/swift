@@ -303,14 +303,14 @@ def p_loop_block(p):
     """
     loop_block : for lparent loop_var condition semicolon step semicolon rparent comp_block
     |           while condition comp_block
-    |           repeat comp_block while condition
+    |           repeat comp_block while condition semicolon
 
     """
     if len(p) == 10:
         p[0] = make_node('for_loop_block', [p[3], p[4], p[6], p[9]])
     elif len(p) == 4:
         p[0] = make_node('while_loop_block', [p[2], p[3]])
-    elif len(p) == 5:
+    elif len(p) == 6:
         p[0] = make_node('repeat_loop_block', [p[2], p[4]])
 
 
