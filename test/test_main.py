@@ -476,3 +476,7 @@ class Test(TestCase):
 140 STO 0 7
 141 RET 0 0
 """, code, "program")
+
+    def test_complex_program(self):
+        code = main("../sample_input/complex_program.swift")
+        self.assertEqual("""todo""", code, "complex_program")
