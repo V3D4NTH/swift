@@ -57,19 +57,22 @@ class Pl0(Pl0Const):
         """
         It prints the symbol table
         """
-        for i in self.symbol_table.values():
+        symbol_table_to_print = copy(self.symbol_table)
+        del symbol_table_to_print["_scopes"]
+        for i in symbol_table_to_print.values():
             if i.type == "func":
                 out_method(i.__str__())
 
                 if i.params is not None:
                     out_method("--------params--------\n")
-                    for j in i.params:
-                        out_method(i.params[j].__str__())
+                    for j in i.params.values():
+                        out_method(j.__str__())
 
                 if i.locals is not None:
                     out_method("--------locals--------\n")
                     for k in i.locals:
-                        out_method(i.locals[k].__str__())
+                        for m in k.values():
+                            out_method(m.__str__())
             else:
                 out_method(i.__str__())
 
