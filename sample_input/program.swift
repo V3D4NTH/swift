@@ -44,6 +44,5 @@ var a : Int = 0;
 var b : Int = 0;
 b = someOtherFunction(43);
 a = someOtherFunction3(a,b);
-// a = someOtherFunction(52);
-
-// b = someComplexFunction(42,42,42,42);
+a = someOtherFunction(52);
+b = someComplexFunction(42,42,42,42);

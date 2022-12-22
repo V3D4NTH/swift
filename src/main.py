@@ -57,13 +57,16 @@ def save_generated_code(generated_code, formatted_input_code, output_dir):
     """
     if generated_code.return_code() != "":
         # Writing the generated code to a file.
-        with open(output_dir + "/generated_code.txt", mode="w") as txt:
+        with open(output_dir + "/generated_code_with_input.txt", mode="w") as txt:
             txt.writelines("----------input code----------------\n")
             txt.writelines(formatted_input_code)
             txt.writelines("\n")
             txt.writelines("----------generated code------------\n")
             txt.writelines(generated_code.return_code())
             txt.writelines("------------------------------------")
+
+        with open(output_dir + "/generated_code_only.txt", mode="w") as txt:
+            txt.writelines(generated_code.return_code())
 
 
 def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):

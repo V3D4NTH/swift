@@ -242,7 +242,6 @@ class Pl0(Pl0Const):
         #[JT] evaluate function parameters first
         for new_addr, i in enumerate(params.values()):
             i.level = level
-            i.address = new_addr + len(symbol_table) - 1
         #[JT] number of parameters, needed to calculate the correct address for local variables
         param_count = len(params)
         #[JT] loop through indented blocks inside the function body
@@ -252,7 +251,6 @@ class Pl0(Pl0Const):
             current_block = locals[i]
             for new_addr, j in enumerate(current_block.values()):
                 j.level = level
-                j.address = new_addr + (len(symbol_table) - 1) + param_count + locals_parent_scope_var_count
             locals_parent_scope_var_count += len(current_block)
 
         self.generate_instruction(inst(Inst.int), 0, 3)
