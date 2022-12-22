@@ -14,8 +14,8 @@ keywords = (
 tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
     'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent', 'newline', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby',
-    'uminus', 'question_mark'
+    'ge', 'arrow', 'rcparent', 'lcparent', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby',
+    'question_mark'
 
 )
 
@@ -90,7 +90,6 @@ t_equals = r'='
 t_equals_equals = r'=='
 t_add = r'\+='
 t_sub = r'\-='
-t_uminus = r'\-'
 t_divby = r'\/='
 t_mulby = r'\*='
 t_plus = r'\+'

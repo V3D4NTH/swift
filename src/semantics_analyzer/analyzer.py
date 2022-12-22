@@ -20,6 +20,7 @@ class Analyzer:
         self.__subtree_leaf_dtype = None
         self.__subtree_leaf_value = None
         self.__identifier_table_entry = None
+
     # preorder tree traversal
     # build symbol table
     # check for semantics
@@ -133,7 +134,6 @@ class Analyzer:
             print(f"Type mismatch, cannot multiply types: {subsubtree_value[1]}, {subsubtree_value[1]}")
             return False
 
-
         return True
 
     def __eval_factor_expression(self, node):
@@ -177,7 +177,7 @@ class Analyzer:
         function_arguments = children[1]
 
         function_params = function_prototype.params
-        function_call_ok = self.__check_function_call(function_params,function_arguments)
+        function_call_ok = self.__check_function_call(function_params, function_arguments)
         if not function_call_ok:
             print(f"Error when calling a function {function_name}")
         self.__subtree_leaf_value, self.__subtree_leaf_dtype = function_prototype.name, function_prototype.return_type
@@ -193,21 +193,19 @@ class Analyzer:
     def __mark_visited(self, node):
         self.__visited_nodes.add(node)
 
-
-
-    def __check_function_call(self,function_params,function_arguments):
+    def __check_function_call(self, function_params, function_arguments):
         tmp = list(function_params.keys())
         walker = 0
         param_count = len(tmp)
         kiddos = function_arguments.get_children()
-        #argument list
+        # argument list
         if len(kiddos) == 2:
             while True:
                 if walker >= param_count:
                     print(f"Too many arguments, expected {param_count}, got at least {walker}")
                     return False
 
-                #single argument
+                # single argument
                 if len(kiddos) == 1:
                     kiddos = kiddos[0]
                     break
@@ -217,7 +215,7 @@ class Analyzer:
                 self.__mark_visited(kiddos[1])
                 kiddos = kiddos[1].get_children()
                 walker += 1
-        #single argument of function
+        # single argument of function
         else:
             kiddos = kiddos[0]
             # no arguments provided
@@ -236,7 +234,7 @@ class Analyzer:
 
         return argument_ok
 
-    def __compare_argument_and_parameter(self,argument,parameter):
+    def __compare_argument_and_parameter(self, argument, parameter):
         value_ok = self.__eval_node(argument)
         if not value_ok:
             return False
@@ -247,7 +245,6 @@ class Analyzer:
              instead got argument with type {argument_type}")
             return False
         return True
-
 
     def __check_identifier(self, identifier, scope):
         # im inside some scope, not a global one, check my existence there first
@@ -267,20 +264,18 @@ class Analyzer:
 
         return False
 
-
     # jdi od myho lokalniho scopeu az po globalni, jestli tu promennou nenajdes
     def __find_identifier(self, identifier):
         i = len(self.__scope_stack)
         while i > 0:
-            if self.__check_identifier(identifier, self.__scope_stack[i-1]):
+            if self.__check_identifier(identifier, self.__scope_stack[i - 1]):
                 return True
             i -= 1
         print(f"Unknown identifier {identifier}")
         return False
 
-
-    #util function, saves information about identifier
-    def __save_ident_values(self,symbol_table_record):
+    # util function, saves information about identifier
+    def __save_ident_values(self, symbol_table_record):
         self.__identifier_table_entry = symbol_table_record
         '''
         #function vyhybka

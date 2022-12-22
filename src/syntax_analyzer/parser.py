@@ -15,11 +15,12 @@ lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
 """
 
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
-# the cfg is ambigous, therefore precende must be defined
+# the cfg is ambiguous, therefore precedence must be defined
 precedence = (
-    ('nonassoc', 'lt', 'gt', 'le', 'ge', 'equals_equals'),
-    ('left', 'plus', 'minus', 'var', 'let'),
+    ('nonassoc', 'lt', 'gt', 'le', 'ge', 'equals_equals','and','or'),
+    ('left', 'plus', 'minus', 'var', 'let','id'),
     ('left', 'multiply', 'divide'),
+    ('left','lparent'),
     ('right', 'uminus'),
 )
 
@@ -282,6 +283,8 @@ def p_block(p):
         | return expression semicolon
         | loop_block
         | cond_block
+        | let var_dekl
+        | var var_dekl
         | expression semicolon
         | var_modification semicolon
     """
@@ -351,8 +354,17 @@ def p_step(p):
 def p_condition(p):
     """
     condition : expression relation_operator expression
+    |           expression relation_operator expression and condition
+    |           expression relation_operator expression or condition
     """
-    p[0] = make_node('condition', [p[1], p[2], p[3]])
+    if len(p) == 4 and p[1] != '(':
+        p[0] = make_node('condition', [p[1], p[2], p[3]])
+    #elif len(p) == 4:
+    #    p[0] = make_node('nested_condition',[p[2]])
+    elif len(p) == 6 and p[1] != '(':
+        p[0] = make_node('compound_condition',[p[1],p[2],p[3],p[4],p[5]])
+    #elif len(p) == 6:
+    #    p[0] = make_node('nested_compound_condition',[p[2],p[4],p[5]])
 
 
 # assignment expresion

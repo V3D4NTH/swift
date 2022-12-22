@@ -10,7 +10,7 @@ import ply.yacc as yy
 import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
-from src.syntax_analyzer.utils import generate_table_of_symbols
+from src.syntax_analyzer.utils import generate_table_of_symbols,find_real_level
 from src.semantics_analyzer.analyzer import Analyzer
 
 
@@ -97,7 +97,7 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     generated_code = gen.Pl0(dst, table_of_symbols)
 
     # Generating the output files.
-    output_dir = generate_output_files(dst, generated_code, output_dir)
+    #output_dir = generate_output_files(dst, generated_code, output_dir)
 
     # Showing the tree.
     visualize_dst(dst, show_tree_with_pyqt5)
@@ -111,3 +111,7 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     return generated_code.return_code()
 
 
+if __name__ == '__main__':
+    # main("../sample_input/not_tested/func.swift")
+    main("../sample_input/not_tested/func.swift")
+    # main("../sample_input/not_tested/for_in_func.swift")
