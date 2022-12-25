@@ -7,14 +7,14 @@ from ply import lex
 
 # A list of keywords that are used in the language.
 keywords = (
-    'let', 'var', 'func', 'for', 'return', 'if', 'else', 'and', 'or','while','repeat'
+    'let', 'var', 'func', 'for', 'return', 'if', 'else', 'and', 'or', 'while', 'repeat'
 )
 
 # A list of tokens that the lexer will recognize.
 tokens = keywords + (
-    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'int',
-    'bool', 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt',
-    'ge', 'arrow', 'rcparent', 'lcparent', 'ddot', 'comma', 'add', 'sub', 'not_equal','divby','mulby',
+    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type','boolean_type' ,'int','bool'
+    , 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt', 'Void',
+    'ge', 'arrow', 'rcparent', 'lcparent', 'ddot', 'comma', 'add', 'sub', 'not_equal', 'divby', 'mulby',
     'question_mark'
 
 )
@@ -25,7 +25,8 @@ reserved_map = {}
 for r in tokens:
     reserved_map[r.lower()] = r
 
-#TODO low prio problem - .* sezere vsechno od //
+
+# TODO low prio problem - .* sezere vsechno od //
 def t_comment(t):
     r'//.*'
     t.lexer.lineno += t.value.count('\n')
@@ -36,6 +37,10 @@ def t_Int(t):
     t.type = reserved_map.get(t.value, "int_type")
     return t
 
+def t_Boolean(t):
+    r'Boolean'
+    t.type = reserved_map.get(t.value,"boolean_type")
+    return t
 
 def t_OR(t):
     r'\|\|'
@@ -49,6 +54,14 @@ def t_AND(t):
     return t
 
 
+
+def t_bool(t):
+    r'True|False'
+    return t
+
+def t_Void(t):
+    r'Void'
+    return t
 # chytam identifikatory
 # pokud je identifikator klicove slovo, zachyt to do typu
 def t_id(t):
@@ -79,11 +92,6 @@ def t_int(t):
         print(f"Number {t.value} is not integer.")
         t.lexer.skip(1)
     return t
-
-#boolean data type, 1 stands for true
-def t_bool(t):
-    r'true|false'
-    t.value = 1 if t.value == "true" else 0
 
 # Defining the tokens that the lexer will recognize.
 t_equals = r'='

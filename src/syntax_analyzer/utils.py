@@ -6,8 +6,8 @@ from ete3 import Tree
 
 from src.pl0_code_generator import SymbolRecord
 
-
-def make_node(node_name: str, children=None) -> Tree:
+#[JT] lineno = number of line where the statement is declared
+def make_node(node_name: str, children=None,lineno=0) -> Tree:
     """
     It takes a node name and a list of children, and returns a tree
 
@@ -16,7 +16,7 @@ def make_node(node_name: str, children=None) -> Tree:
     :param children: A list of children to add to the node
     :return: A tree with the name of the node and the children
     """
-    ast = Tree(name=node_name)
+    ast = Tree(name=node_name,support=lineno)
 
     if children is None:
         return ast
@@ -89,6 +89,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
     """
         It generates a table of symbols
         """
+    position_in_tree = index
     index = 0
     #[JT] indented scopes in global scope
     symbol_table["_scopes"] = []
@@ -106,13 +107,14 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                     if ids_and_types[i] in params.keys():
                         raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
                     params[ids_and_types[i]] = (
-                        SymbolRecord(ids_and_types[i], ids_and_types[i + 1], param=True, level=level,
+                        SymbolRecord(ids_and_types[i], ids_and_types[i + 1], param=True, level=level,tree_position=position_in_tree+index,
                                      real_level=real_level,
                                      address=local_address))
+
                     local_address += 1
             func_name = symbols[index].name
             symbol_table[func_name] = (
-                SymbolRecord(symbols[index].name, "func", params=params, level=level, real_level=real_level,
+                SymbolRecord(symbols[index].name, "func", params=params, level=level, real_level=real_level,tree_position=position_in_tree+index,
                              address=address,
                              return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
             address += 1
@@ -134,6 +136,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                  children[0].name,
                                                                                  level=level,
                                                                                  real_level=real_level,
+                                                                                 tree_position=position_in_tree+index,
                                                                                  address=address))})
                 #tohle je blbost
                 #symbol_table[level].locals =
@@ -154,6 +157,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                  children[0].name,
                                                                                  level=level,
                                                                                  real_level=real_level,
+                                                                                 tree_position=position_in_tree + index,
                                                                                  address=address))
                 if ancestor.get_sisters()[0].name == "let":
                     current_scope_dic[symbols[index].name].const = True
@@ -174,6 +178,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                   children[0].name,
                                                                   level=level,
                                                                   real_level=real_level,
+                                                                  tree_position=position_in_tree + index,
                                                                   address=address))
 
                 if ancestor.get_sisters()[0].name == "let":
