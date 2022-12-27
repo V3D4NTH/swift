@@ -12,11 +12,10 @@ keywords = (
 
 # A list of tokens that the lexer will recognize.
 tokens = keywords + (
-    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type','boolean_type' ,'int','bool'
-    , 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt', 'Void',
+    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type','boolean_type','string_type','array','int','bool'
+    , 'id', 'semicolon', 'rparent', 'lparent','lt', 'le', 'gt', 'Void',
     'ge', 'arrow', 'rcparent', 'lcparent', 'ddot', 'comma', 'add', 'sub', 'not_equal', 'divby', 'mulby',
-    'question_mark'
-
+    'question_mark', 'quote',
 )
 
 reserved_set = set(tokens)
@@ -31,7 +30,6 @@ def t_comment(t):
     r'//.*'
     t.lexer.lineno += t.value.count('\n')
 
-
 def t_Int(t):
     r'Int'
     t.type = reserved_map.get(t.value, "int_type")
@@ -40,6 +38,17 @@ def t_Int(t):
 def t_Boolean(t):
     r'Boolean'
     t.type = reserved_map.get(t.value,"boolean_type")
+    return t
+
+def t_String(t):
+    r'String'
+    t.type = reserved_map.get(t.value,"string_type")
+    return t
+
+
+def t_Array(t):
+    r'Array'
+    t.type = reserved_map.get(t.value,"array")
     return t
 
 def t_OR(t):
@@ -85,7 +94,7 @@ def t_error(t):
 
 # zadefinuj token jako funkci - umozni k tomu pribalit nejaky vykonny kod
 def t_int(t):
-    r'\d+'
+    r'\-?\d+'
     try:
         t.value = int(t.value)
     except ValueError:
@@ -118,5 +127,6 @@ t_lcparent = r'\{'
 t_ddot = r'\:'
 t_comma = r'\,'
 t_question_mark = r'\?'
+t_quote =r'\"'
 # Telling the lexer to ignore spaces and tabs.
 t_ignore = " \t"

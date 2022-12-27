@@ -173,8 +173,6 @@ class SymbolRecord:
         :param params: a list of parameters
         :param return_type: The return type of the function
         :param param: name of the variable, defaults to False (optional)
-        :param tree_position: the position of the symbol in the tree, defaults to 0 (optional)
-        :param locals_vars: a list of all the local variables in the function
         """
         self.id = id(self)
         self.name = name
@@ -185,6 +183,7 @@ class SymbolRecord:
         self.address = address
         self.size = size
         self.param = param
+        self.tree_position = tree_position
         if self.type == "func":
             self.params = params
             self.return_type = return_type

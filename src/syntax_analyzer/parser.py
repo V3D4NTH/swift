@@ -105,9 +105,16 @@ def p_dtype(p):
     """
     dtype : int_type
     | boolean_type
+    | array_dekl
+    | string_type
     """
     p[0] = make_node('data_type', [p[1]],lineno=p.lexer.lineno)
 
+def p_array_dekl(p):
+    """
+    array_dekl : array lparent int rparent
+    """
+    p[0] = make_node("array_type",[p[1],p[3]])
 
 # general expression - math expressions, variable assignments, functions calls, ...
 def p_expression(p):
@@ -135,7 +142,6 @@ def p_ternary(p):
     ternary : condition question_mark expression ddot expression
     """
     p[0] = make_node("ternary_operator",[p[1],p[3],p[5]],lineno=p.lexer.lineno)
-
 
 def p_term(p):
     """
@@ -218,7 +224,11 @@ def p_val_id(p):
     val : id
     """
     p[0] = make_node('var_value', [ p[1] ],lineno=p.lexer.lineno)
-
+def p_val_string(p):
+    """
+    val : quote id quote
+    """
+    p[0] = make_node("string_value",[p[2]],lineno=p.lexer.lineno)
 
 # rule for function declaration make_node contains operation and val, val contains the relevant information about
 # function, such as name, params, body and return type 'fun_dekl : func id lparent params rparent arrow dtype
@@ -363,7 +373,7 @@ def p_condition(p):
     |           expression relation_operator expression and condition
     |           expression relation_operator expression or condition
     """
-    if len(p) == 4 and p[1] != '(':
+    if len(p) == 4:
         p[0] = make_node('condition', [p[1], p[2], p[3]],lineno=p.lexer.lineno)
     #elif len(p) == 4:
     #    p[0] = make_node('nested_condition',[p[2]])
