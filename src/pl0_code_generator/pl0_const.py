@@ -160,7 +160,7 @@ class Pl0Const:
 class SymbolRecord:
 
     def __init__(self, name, symbol_type, const=False, level=0, real_level=0, address=3, size=0,
-                 params=None, return_type=None, param=False, locals_vars=None):
+                 params=None, return_type=None, param=False, tree_position=0, locals_vars=None):
         """
         This function initializes the symbol record
 
@@ -173,6 +173,8 @@ class SymbolRecord:
         :param params: a list of parameters
         :param return_type: The return type of the function
         :param param: name of the variable, defaults to False (optional)
+        :param tree_position: the position of the symbol in the tree, defaults to 0 (optional)
+        :param locals_vars: a list of all the local variables in the function
         """
         self.id = id(self)
         self.name = name
