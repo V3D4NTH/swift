@@ -84,7 +84,7 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     # Parsing the code_input.
     lexer = \
     ply.lex.lex(module=lexical)
-    y = yy.yacc(module=syntax, debug=False)
+    y = yy.yacc(module=syntax, debug=False, write_tables=False)
     dst = y.parse(formatted_input_code)
 
     # Generating a table of symbols.
