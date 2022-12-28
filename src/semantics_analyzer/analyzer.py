@@ -107,6 +107,8 @@ class Analyzer:
             subtree_okay = self.__eval_if_else_stmt(node)
         elif node_name == "return_statement":
             subtree_okay = self.__eval_return_statement(node)
+        elif node_name == "ternary_operator":
+            subtree_okay = self.__eval_ternary_operator(node)
         elif node_name == "while_loop_block":
             subtree_okay = self.__eval_while_statement(node)
         elif node_name == "repeat_loop_block":
@@ -120,6 +122,40 @@ class Analyzer:
 
         self.__mark_visited(node)
         return subtree_okay
+
+
+    def __eval_ternary_operator(self,node):
+        children = node.get_children()
+        condition = children[0]
+        expression_true = children[1]
+        expression_false = children[2]
+
+        is_condition_ok = self.__eval_node(condition)
+        if not is_condition_ok:
+            print("Error. Condition in ternary operator contains an error.")
+            return False
+        is_true_exp_ok = self.__eval_node(expression_true)
+        if not is_true_exp_ok:
+            print("Error. Expression in ternary operator on the left side contains an error.")
+            return False
+        if self.__check_if_is_function():
+            print("Error. Function call cannot be used in ternary operator.")
+            return False
+
+        left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        is_false_exp_ok = self.__eval_node(expression_false)
+        if not is_false_exp_ok:
+            print("Error. Expression in ternary operator on the right side contains an error.")
+            return False
+        if self.__check_if_is_function():
+            print("Error. Function call cannot be used in ternary operator.")
+            return False
+
+        right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        if left_side_info[1] != right_side_info[1]:
+            print("Type mismatch in addition. Both expressions of ternary operator must be of the same type.")
+            return False
+        return True
 
 
     def __eval_negation_condition(self,node):
