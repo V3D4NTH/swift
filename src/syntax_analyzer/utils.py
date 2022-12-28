@@ -152,8 +152,6 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                  real_level=real_level,
                                                                                  tree_position=position_in_tree+index,
                                                                                  address=address))})
-                #tohle je blbost
-                #symbol_table[level].locals =
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[level].locals[real_level-1][symbols[index].name].const = True
             #deklaruju promennou, ktera neni na globalni urovni
@@ -164,7 +162,6 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 current_scope_dic = symbol_table[level].locals[real_level-1]
                 if symbols[index].name in current_scope_dic.keys():
                     raise Exception("Duplicate symbol:", symbols[index].name, "in", current_scope_dic.keys())
-                    return
                 current_scope_dic[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                                  symbol_type=
                                                                                  symbols[index].get_sisters()[0].

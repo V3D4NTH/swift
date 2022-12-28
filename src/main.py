@@ -86,7 +86,8 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     ply.lex.lex(module=lexical)
     y = yy.yacc(module=syntax, debug=False, write_tables=False)
     dst = y.parse(formatted_input_code)
-
+    if dst is None:
+        raise Exception("Syntax error...")
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
