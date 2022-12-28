@@ -82,6 +82,16 @@ class Test(TestCase):
 12 RET 0 0
 """, code, "if")
 
+    def test_if_and(self):
+            code = main("../sample_input/if_and.swift")
+            self.assertEqual("""
+    """, code, "if_and")
+
+    def test_if_or(self):
+            code = main("../sample_input/if_or.swift")
+            self.assertEqual("""
+    """, code, "if_or")
+
     def test_if_else(self):
         code = main("../sample_input/if_else.swift")
         self.assertEqual("""0 INT 0 3
