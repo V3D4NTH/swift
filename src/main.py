@@ -91,12 +91,12 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
-    '''
+
     #[JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
     semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
         return
-    '''
+
 
     generated_code = gen.Pl0(dst, table_of_symbols)
 
@@ -115,3 +115,4 @@ def main(input_file_name: str, output_dir="./",  show_tree_with_pyqt5=False):
     return generated_code.return_code()
 
 
+#main("../sample_input/not_tested/helloworld.swift")

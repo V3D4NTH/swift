@@ -10,13 +10,13 @@ class Analyzer:
         self.__visited_nodes = set()
         self.__var_types = {"let", "var"}
         self.__data_types = {"Int", "Boolean"}
-        #aktualni zanoreni
+        # aktualni zanoreni
         self.real_level = 0
-        #global scope (0) nebo jmeno funkce
+        # global scope (0) nebo jmeno funkce
         self.level = 0
-        #pocet returnu ve funkci, maximalne povolen 1
+        # pocet returnu ve funkci, maximalne povolen 1
         self.ret_statement_count = 0
-        #co se z funkce vraci
+        # co se z funkce vraci
         self.ret_value = None
         # po vyhodnoceni nejakeho vyrazu se sem placne datovy typ toho vyrazu
         # tedy jestli je to boolean, int, ...
@@ -78,7 +78,7 @@ class Analyzer:
             subtree_okay = self.__eval_function_signature(node)
         elif node_name == "compound_block":
             subtree_okay = self.__eval_comp_block(node)
-        #[JT] names of all nodes whose children represent a block, either a function body, if/if-else body or loop body
+        # [JT] names of all nodes whose children represent a block, either a function body, if/if-else body or loop body
         elif node_name == "block" or node_name == "block_var_dekl" or node_name == "block_expression" or node_name == "block_statement":
             subtree_okay = self.__eval_block(node)
         elif node_name == "for_loop_block":
@@ -89,7 +89,12 @@ class Analyzer:
             subtree_okay = self.__eval_loop_var(node)
         elif node_name == "condition":
             subtree_okay = self.__eval_condition(node)
-
+        elif node_name == "compound_condition":
+            subtree_okay = self.__eval_compound_condition(node)
+        elif node_name == "simple_condition":
+            subtree_okay = self.__eval_simple_condition(node)
+        elif node_name == "id_compound_condition":
+            subtree_okay = self.__eval_id_compound_condition(node)
         elif node_name == "var_modification":
             subtree_okay = self.__eval_var_modification(node)
         elif node_name == "if_stmt":
@@ -98,11 +103,88 @@ class Analyzer:
             subtree_okay = self.__eval_if_else_stmt(node)
         elif node_name == "return_statement":
             subtree_okay = self.__eval_return_statement(node)
+        elif node_name == "while_loop_block":
+            subtree_okay = self.__eval_while_statement(node)
+        elif node_name == "repeat_loop_block":
+            subtree_okay = self.__eval_repeat_statement(node)
+        elif node_name == "unary_minus":
+            subtree_okay = self.__eval_unary_minus(node)
+        elif node_name == "const_expression_term":
+            subtree_okay = True
 
         self.__mark_visited(node)
         return subtree_okay
 
-    def __eval_return_statement(self,node):
+
+    def __eval_unary_minus(self,node):
+        children = node.get_children()
+        return True
+
+    def __eval_compound_condition(self,node):
+        children = node.get_children()
+        left_side = children[0]
+        right_side = children[2]
+        chained_condition = children[4]
+
+        left_side_okay = self.__eval_node(left_side)
+        if not left_side_okay:
+            print("Error, left side of condition is not correct.")
+            return False
+        left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        is_function_call = self.__check_if_is_function()
+        if is_function_call:
+            print("Error, function call cannot be used in condition!")
+            return False
+        right_side_okay = self.__eval_node(right_side)
+        if not right_side_okay:
+            print("Error, right side of condition is not correct.")
+            return False
+        is_function_call = self.__check_if_is_function()
+        if is_function_call:
+            print("Error, function call cannot be used in condition!")
+            return False
+        right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+
+        if left_side_info[1] != right_side_info[1]:
+            print("Type mismatch in addition. Addition can only be performed with integers.")
+            return False
+        is_chained_condition_okay = self.__eval_node(chained_condition)
+        if not is_chained_condition_okay:
+            print("Error, chained condition contains and error.")
+            return False
+
+        return True
+
+    def __eval_while_statement(self,node):
+        children = node.get_children()
+        condition = children[0]
+        body = children[1]
+        is_condition_okay = self.__eval_node(condition)
+        if not is_condition_okay:
+            print("Error, condition in while loop is not correct!")
+            return False
+        is_body_okay = self.__eval_node(body)
+        if not is_body_okay:
+            print("Error, body of while loop contains an error.")
+            return False
+        return True
+
+    def __eval_repeat_statement(self,node):
+        children = node.get_children()
+        body = children[0]
+        condition = children[1]
+        is_condition_okay = self.__eval_node(condition)
+        if not is_condition_okay:
+            print("Error in condition of repeat statement.")
+            return False
+        is_body_okay = self.__eval_node(body)
+        if not is_body_okay:
+            print("Body of repeat statement contains an error.")
+            return False
+        return True
+
+
+    def __eval_return_statement(self, node):
         children = node.get_children()
         expression = children[0]
         is_expression_okay = self.__eval_node(expression)
@@ -113,48 +195,78 @@ class Analyzer:
         self.ret_value = expression
         return True
 
-    def __eval_expression_sum(self,node):
+    def __eval_expression_sum(self, node):
         children = node.get_children()
         term = children[0]
         factor = children[1]
         is_term_expression_okay = self.__eval_node(term)
+        left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+
         if not is_term_expression_okay:
-            print("Error in sum expression.")
-        is_factor_okay = self.__eval_factor(factor)
+            print("Error in addition.")
+        is_factor_okay = self.__eval_node(factor)
+        right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if not is_factor_okay:
             print("Error in factor expression.")
+
+        if left_side_info[1] != right_side_info[1]:
+            print("Type mismatch in addition. Addition can only be performed with integers.")
+            if right_side_info[1] == "func" or right_side_info[1] == "func":
+                print("If you intended to use function call in expression."
+                      " Store the return value of function in a variable.")
+            return False
+
         return True
 
-    def __eval_expression_divide(self,node):
+    def __eval_expression_divide(self, node):
         children = node.get_children()
         factor = children[0]
         expression = children[1]
         is_dividend_okay = self.__eval_node(factor)
+        dividend_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if not is_dividend_okay:
-            print("Error in division expression. Dividend is not a valid expression.")
+            print("Error in division. Dividend is not a valid expression.")
             return False
         is_divisor_okay = self.__eval_node(expression)
+        divisor_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        if dividend_info[1] != divisor_info[1]:
+            print("Type mismatch in division. Division can only be performed with integers.")
+            if divisor_info[1] == "func" or dividend_info[1] == "func":
+                print("If you intended to use function call in expression."
+                      " Store the return value of function in a variable.")
+            return False
         if not is_divisor_okay:
-            print("Error in division expression. Divisor is not a valid expression.")
+            print("Error in division. Divisor is not a valid expression.")
             return False
         if type(self.__subtree_leaf_value) is int and self.__subtree_leaf_value == 0:
-            print("Error. Division by zero is not a valid operation")
+            print("Error. Division by zero is not defined.")
             return False
 
         return True
+
     def __eval_expression_minus(self, node):
         children = node.get_children()
         term = children[0]
         factor = children[1]
         is_term_expression_okay = self.__eval_node(term)
+        left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if not is_term_expression_okay:
             print("Error in minus expression.")
-        is_factor_okay = self.__eval_factor(factor)
+        is_factor_okay = self.__eval_node(factor)
         if not is_factor_okay:
             print("Error in factor expression.")
+
+        right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        if left_side_info[1] != right_side_info[1]:
+            print("Type mismatch in subtraction. Subtraction can only be performed with integers.")
+            if right_side_info[1] == "func" or right_side_info[1] == "func":
+                print("If you intended to use function call in expression."
+                      " Store the return value of function in a variable.")
+            return False
+
         return True
 
-    def __eval_if_else_stmt(self,node):
+    def __eval_if_else_stmt(self, node):
         children = node.get_children()
         condition = children[0]
         if_body = children[1]
@@ -174,11 +286,11 @@ class Analyzer:
             return False
         return True
 
-    def __eval_if_stmt(self,node):
+    def __eval_if_stmt(self, node):
         children = node.get_children()
         condition = children[0]
         body = children[1]
-        is_condition_okay = self.__eval_condition(condition)
+        is_condition_okay = self.__eval_node(condition)
         if not is_condition_okay:
             print("Error in if statement condition")
             return False
@@ -188,8 +300,7 @@ class Analyzer:
             return False
         return True
 
-
-    def __eval_var_modification(self,node):
+    def __eval_var_modification(self, node):
         children = node.get_children()
         identifier = children[0].name
         expression = children[2]
@@ -208,16 +319,15 @@ class Analyzer:
             return False
         return True
 
-
-    def __eval_function_declaration(self,node):
+    def __eval_function_declaration(self, node):
         children = node.get_children()
         is_function_okay = self.__eval_node(children[0])
         if not is_function_okay:
             print(f"Function declaration contains an error")
             return False
-        return False
+        return True
 
-    def __eval_for_loop_block(self,node):
+    def __eval_for_loop_block(self, node):
         children = node.get_children()
         loop_var = children[0]
         condition = children[1]
@@ -241,11 +351,9 @@ class Analyzer:
             print("Error in body of for loop")
             return False
 
-
         return True
 
-
-    def __eval_condition(self,node):
+    def __eval_condition(self, node):
         children = node.get_children()
         left_side = children[0]
         right_side = children[2]
@@ -271,7 +379,7 @@ class Analyzer:
 
         return True
 
-    def __eval_loop_step(self,node):
+    def __eval_loop_step(self, node):
         children = node.get_children()
         identifier = children[0].name
         is_valid_identifier = self.__find_identifier(identifier)
@@ -283,7 +391,7 @@ class Analyzer:
             return False
         return True
 
-    def __eval_loop_var(self,node):
+    def __eval_loop_var(self, node):
         children = node.get_children()
         expr = children[0]
         if len(children) == 2:
@@ -294,17 +402,17 @@ class Analyzer:
             return False
         return True
 
-    def __eval_function_signature(self,node):
+    def __eval_function_signature(self, node):
         children = node.get_children()
         function_name = children[0].name
         params = children[1]
         return_type = children[2]
         body = children[3]
-        #save previous scope
+        # save previous scope
         previous_level = self.level
         previous_return_count = self.ret_statement_count
         previous_return_val = self.ret_value
-        #update scope
+        # update scope
         self.level = function_name
         params_ok = self.__eval_node(params)
 
@@ -331,27 +439,26 @@ class Analyzer:
                 print("Function can have only one return statement.")
                 return False
 
-        #restore previous scope
+        # restore previous scope
         self.level = previous_level
         self.ret_statement_count = previous_return_count
         self.ret_value = previous_return_val
         return True
 
-     #zde neni nic moc k overeni
+    # zde neni nic moc k overeni
     def __eval_function_parameters(self, node):
-        #children = node.get_children()
+        # children = node.get_children()
         return True
-
 
     def __eval_block(self, node):
         tmp_node = node
-        #projedu cely podstrom bloku
+        # projedu cely podstrom bloku
         while True:
-            #vyhodnot podstrom
+            # vyhodnot podstrom
             children = tmp_node.get_children()
             n = len(children)
             tmp = children[0]
-            #block variable declaration, the relevant subtree is on index 1 instead of 0
+            # block variable declaration, the relevant subtree is on index 1 instead of 0
             if n == 3:
                 tmp = children[1]
             is_statement_okay = self.__eval_node(tmp)
@@ -361,17 +468,17 @@ class Analyzer:
 
             if tmp not in self.__visited_nodes:
                 self.__mark_visited(tmp)
-            #konec vetveni stromu
+            # konec vetveni stromu
             if len(children) == 1:
                 break
-            #jdi dal stromem bloku
+            # jdi dal stromem bloku
             tmp_node = children[1]
             if n == 3:
                 tmp_node = children[2]
 
         return True
 
-    def __eval_comp_block(self,node):
+    def __eval_comp_block(self, node):
         self.real_level += 1
         block_node = node.get_children()[0]
         is_block_okay = self.__eval_node(block_node)
@@ -380,6 +487,7 @@ class Analyzer:
             return False
         self.real_level -= 1
         return True
+
     # check if variable declaration is semantically correct
     # ie if integer is really an integer and if the variable does not exist in the current scope
     def __eval_var_declaration(self, node):
@@ -388,7 +496,8 @@ class Analyzer:
         self.__mark_visited(var_type)
         # check variable type
         if var_type.name not in self.__var_types:
-            print(f"Faulty variable declaration, unknown variable type {var_type.name}. Allowed types: {self.__var_types}")
+            print(
+                f"Faulty variable declaration, unknown variable type {var_type.name}. Allowed types: {self.__var_types}")
             return False
         # continue evaluation
         return self.__eval_node(children[1])
@@ -411,6 +520,9 @@ class Analyzer:
         if not expression_valid:
             print(f"Invalid expression value in variable declaration")
             return False
+        #neresim to dal - vim, ze je to spravne, protoze to je vyhodnoceno v ramci gramatiky
+        if expression.name == "const_expression_term":
+            return True
         data_type_compatible = data_type.name == self.__subtree_leaf_dtype
         if not data_type_compatible:
             print(f"Type mismatch, cannot assign expression of type {self.__subtree_leaf_dtype}"
@@ -442,9 +554,11 @@ class Analyzer:
             return False
         subsubtree_value = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if subtree_value[1] != subsubtree_value[1]:
-            print(f"Type mismatch, cannot multiply types: {subsubtree_value[1]}, {subsubtree_value[1]}."
-                  f" Multiplication is only allowed with Int datatype. "
-                  f"If you intended to use function call, store return type of function to variable.")
+            print(f"Type mismatch, cannot multiply types: {subtree_value[1]}, {subsubtree_value[1]}."
+                  f" Multiplication is only allowed with Int data type. ")
+            if subsubtree_value[1] == "func":
+                print("You intended to use function call in expression. "
+                      "Store the result of function call a variable first and use that variable in expression.")
             return False
 
         return True
@@ -564,12 +678,13 @@ class Analyzer:
             return False
         return True
 
-
-
     # jdi od myho lokalniho scopeu az po globalni, jestli tu promennou nenajdes
-    #TODO rozhodnout, kdy vidim a kdy nevidim na identifikator
+    # TODO rozhodnout, kdy vidim a kdy nevidim na identifikator
     def __find_identifier(self, identifier):
-        symbol = utils.find_entry_in_symbol_table(self.__symbol_table,self.level,self.real_level,identifier)
+        symbol = utils.find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier)
+        if symbol is None:
+            print(f"Identifier {identifier} not declared!")
+            return False
         self.__identifier_table_entry = symbol
         self.__subtree_leaf_dtype = symbol.type
         return True

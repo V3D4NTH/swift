@@ -5,9 +5,10 @@
 from ete3 import Tree
 
 from src.pl0_code_generator import SymbolRecord
-
+#no idea how to propagate lineno through nodes, so i have to make a custom map for it
+line_numbers = {}
 #[JT] lineno = number of line where the statement is declared
-def make_node(node_name: str, children=None,lineno=0) -> Tree:
+def make_node(node_name: str, children=None,lineno=-1) -> Tree:
     """
     It takes a node name and a list of children, and returns a tree
 
@@ -16,8 +17,7 @@ def make_node(node_name: str, children=None,lineno=0) -> Tree:
     :param children: A list of children to add to the node
     :return: A tree with the name of the node and the children
     """
-    ast = Tree(name=node_name,support=lineno)
-
+    ast = Tree(name=node_name)
     if children is None:
         return ast
     for i in children:
@@ -25,6 +25,8 @@ def make_node(node_name: str, children=None,lineno=0) -> Tree:
             ast.add_child(child=i)
         else:
             ast.add_child(name=i)
+    #if lineno != -1:
+    #    line_numbers[id(ast)] = lineno
     return ast
 
 # wrapper function that checks if node represents numerical value
@@ -50,6 +52,8 @@ def find_real_level(symbols, index):
 def find_entry_in_symbol_table(symbol_table,level,real_level,symbol_name):
     #[JT] global scope
     if real_level == 0:
+        if symbol_name not in symbol_table:
+            return None
         return symbol_table[symbol_name]
     #[JT] we are searching for entry of identifier in glob al scope
     if level == 0:
@@ -67,6 +71,10 @@ def find_entry_in_symbol_table(symbol_table,level,real_level,symbol_name):
             indent_dic = symbol_table['_scopes'][real_level]
             if symbol_name in indent_dic:
                 return indent_dic[symbol_name]
+
+        if symbol_name not in symbol_table:
+            return None
+
         #we did not find the variable in indented blocks => it must be in global scope
         return symbol_table[symbol_name]
     else:
@@ -74,16 +82,20 @@ def find_entry_in_symbol_table(symbol_table,level,real_level,symbol_name):
         function_symbol_table = symbol_table[level]
         scope_count = len(function_symbol_table.locals) if function_symbol_table.locals is not None else 0
         #again we have to search bottom up from our current indentation
-        while real_level > 0:
+        while real_level > 0 and scope_count > 0:
             real_level -= 1
             if real_level >= scope_count:
                 continue
             indent_dic = function_symbol_table.locals[real_level]
             if symbol_name in indent_dic:
                 return indent_dic[symbol_name]
-            #if we did not find the variable indented, then the variable must be a parameter or in global scope
-        return function_symbol_table.params[symbol_name] if symbol_name in function_symbol_table.params \
-            else symbol_table[symbol_name]
+
+        if symbol_name in function_symbol_table.params:
+            return function_symbol_table.params[symbol_name]
+        if symbol_name in symbol_table:
+            return symbol_table[symbol_name]
+        print(f"Identifier {symbol_name} not declared!")
+        return None
 
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level=0, address=3, index=0):
     """
@@ -182,3 +194,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                     dic[symbols[index].name].const = True
             address += 1
         index += 1
+
+
+def get_line_number(node):
+    return line_numbers[id(node)]
