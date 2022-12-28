@@ -9,7 +9,7 @@ class Analyzer:
         self.__symbol_table = symbol_table
         self.__visited_nodes = set()
         self.__var_types = {"let", "var"}
-        self.__data_types = {"Int", "Boolean"}
+        self.__data_types = {"Int", "Boolean","Array","String"}
         # aktualni zanoreni
         self.real_level = 0
         # global scope (0) nebo jmeno funkce
@@ -24,6 +24,8 @@ class Analyzer:
         self.__subtree_leaf_dtype = None
         self.__subtree_leaf_value = None
         self.__identifier_table_entry = None
+        # nazev posledniho nodeu v tele bloku -> u bloku funkce toto nezbytne musi byt return statement.
+        self.__last_stmt_in_block = None
 
     # preorder tree traversal
     # build symbol table
@@ -62,6 +64,8 @@ class Analyzer:
             subtree_okay = self.__eval_expression_minus(node)
         elif node_name == "expression_divide":
             subtree_okay = self.__eval_expression_divide(node)
+        elif node_name == "expression_in_parent":
+            subtree_okay = self.__eval_expression_in_parenthesis(node)
         elif node_name == "factor_expression":
             subtree_okay = self.__eval_factor_expression(node)
         elif node_name == "factor":
@@ -109,6 +113,8 @@ class Analyzer:
             subtree_okay = self.__eval_repeat_statement(node)
         elif node_name == "unary_minus":
             subtree_okay = self.__eval_unary_minus(node)
+        elif node_name == "negation_condition":
+            subtree_okay = self.__eval_negation_condition(node)
         elif node_name == "const_expression_term":
             subtree_okay = True
 
@@ -116,8 +122,38 @@ class Analyzer:
         return subtree_okay
 
 
+    def __eval_negation_condition(self,node):
+        children = node.get_children()
+        condition = children[0]
+        condition_ok = self.__eval_node(condition)
+        if not condition_ok:
+            print("Condition contains an error. Negation is not possible.")
+            return False
+        if self.__subtree_leaf_dtype != "Int" and self.__subtree_leaf_dtype != "Boolean":
+            print(f"Error. Negation is only defined for integers or booleans. Got {self.__subtree_leaf_dtype}")
+            return False
+        return True
+
+
+    def __eval_expression_in_parenthesis(self,node):
+        children = node.get_children()
+        expression = children[0]
+        is_expression_okay = self.__eval_node(expression)
+        if not is_expression_okay:
+            print("Error. Expression in parenthesis contains an error.")
+            return False
+        return True
+
     def __eval_unary_minus(self,node):
         children = node.get_children()
+        expression = children[1]
+        is_expression_okay = self.__eval_node(expression)
+        if not is_expression_okay:
+            print("Error in unary minus operation. Expression is not valid.")
+            return False
+        if self.__subtree_leaf_dtype != "Int":
+            print("Error in unary minus operation. Unary minus can only be performed on integers.")
+            return False
         return True
 
     def __eval_compound_condition(self,node):
@@ -303,6 +339,7 @@ class Analyzer:
     def __eval_var_modification(self, node):
         children = node.get_children()
         identifier = children[0].name
+        modification_operator = children[1].name
         expression = children[2]
         is_valid_identifier = self.__find_identifier(identifier)
         if not is_valid_identifier:
@@ -316,6 +353,10 @@ class Analyzer:
         if not is_valid_expression:
             print(f"Error in variable modification when updating value of variable {identifier}. "
                   f"The assigned expression is not valid.")
+            return False
+        if modification_operator != "=" and self.__check_if_is_function():
+            print(f"Error in variable modification when udpating value of variable {identifier}."
+                  f" Function call can be only used with assignment operator, '='.")
             return False
         return True
 
@@ -432,11 +473,15 @@ class Analyzer:
         if not body_ok:
             print(f"Error in body of function {function_name}.")
             return False
+        last_stmt_in_body = self.__last_stmt_in_block
         if return_type_val != "Void":
             if self.ret_statement_count == 0:
                 print("Return statement in function was expected, none found. Add one return statement")
             elif self.ret_statement_count > 1:
                 print("Function can have only one return statement.")
+                return False
+            elif last_stmt_in_body != "return_statement":
+                print(f"Last statement in function block which is of type {return_type_val} must be a return statement")
                 return False
 
         # restore previous scope
@@ -466,10 +511,10 @@ class Analyzer:
                 print("Error in block")
                 return False
 
-            if tmp not in self.__visited_nodes:
-                self.__mark_visited(tmp)
             # konec vetveni stromu
             if len(children) == 1:
+                if tmp.name != "block":
+                    self.__last_stmt_in_block = tmp.name
                 break
             # jdi dal stromem bloku
             tmp_node = children[1]
@@ -669,6 +714,7 @@ class Analyzer:
     def __compare_argument_and_parameter(self, argument, parameter):
         value_ok = self.__eval_node(argument)
         if not value_ok:
+            print(f"Invalid argument value {argument.get_children()[0].name} for parameter {parameter.name}")
             return False
         argument_type = self.__subtree_leaf_dtype
         function_param_type = parameter.type
@@ -694,7 +740,9 @@ class Analyzer:
         self.__identifier_table_entry = symbol_table_record
 
     def __check_if_is_function(self):
-        val = self.__subtree_leaf_value
-        if type(val) is int:
+        val = self.__identifier_table_entry
+        if not val:
             return False
-        return val.type == "func"
+        if val.type == "func":
+            return True
+        return False

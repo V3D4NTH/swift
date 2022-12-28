@@ -215,7 +215,7 @@ def p_val_bool(p):
     """
     val : bool
     """
-    boolean_val = 1 if p[1] == "True" else 0
+    boolean_val = 1 if p[1] == "true" else 0
     p[0] = make_node('var_value', [ boolean_val ],lineno=p.lexer.lineno)
 
 # value assignment is an identifier
@@ -369,18 +369,22 @@ def p_step(p):
 # condition statement
 def p_condition(p):
     """
-    condition : expression relation_operator expression
-    |           expression relation_operator expression and condition
+    condition : expression relation_operator expression and condition
     |           expression relation_operator expression or condition
+    |           exclamation_mark lparent condition rparent
+    |           expression relation_operator expression
     """
-    if len(p) == 4:
+    if len(p) == 4 and (p[2] == "and" or p[2] == "or"):
+        p[0] = make_node("id_compound_condition",[p[1],p[2],p[3]])
+    elif len(p) == 4:
         p[0] = make_node('condition', [p[1], p[2], p[3]],lineno=p.lexer.lineno)
-    #elif len(p) == 4:
-    #    p[0] = make_node('nested_condition',[p[2]])
-    elif len(p) == 6 and p[1] != '(':
+    elif len(p) == 2:
+        p[0] = make_node("id_condition_simple",[p[1]])
+    elif len(p) == 6:
         p[0] = make_node('compound_condition',[p[1],p[2],p[3],p[4],p[5]],lineno=p.lexer.lineno)
-    #elif len(p) == 6:
-    #    p[0] = make_node('nested_compound_condition',[p[2],p[4],p[5]])
+    elif len(p) == 5:
+        p[0] = make_node("negation_condition",[p[3]])
+
 
 
 # assignment expresion

@@ -15,7 +15,7 @@ tokens = keywords + (
     'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type','boolean_type','string_type','array','int','bool'
     , 'id', 'semicolon', 'rparent', 'lparent','lt', 'le', 'gt', 'Void',
     'ge', 'arrow', 'rcparent', 'lcparent', 'ddot', 'comma', 'add', 'sub', 'not_equal', 'divby', 'mulby',
-    'question_mark', 'quote',
+    'question_mark', 'quote','exclamation_mark'
 )
 
 reserved_set = set(tokens)
@@ -65,7 +65,7 @@ def t_AND(t):
 
 
 def t_bool(t):
-    r'True|False'
+    r'true|false'
     return t
 
 def t_Void(t):
@@ -128,5 +128,6 @@ t_ddot = r'\:'
 t_comma = r'\,'
 t_question_mark = r'\?'
 t_quote =r'\"'
+t_exclamation_mark = r'\!'
 # Telling the lexer to ignore spaces and tabs.
 t_ignore = " \t"

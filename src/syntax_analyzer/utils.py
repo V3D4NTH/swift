@@ -136,7 +136,9 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
             # recursive call
             generate_table_of_symbols(symbol_table, level=symbol_table[func_name].name, real_level=real_level,
                                       symbols=func_body, address=local_address, index=index)
-        if ancestor.name == "var_declaration_expression":
+
+
+        if ancestor.name == "var_declaration_expression" or ancestor.name == "var_declaration":
             real_level = find_real_level(symbols, index)
             if level != "0" and symbol_table[level].locals is None:
                 #slovniky lokalnich promennych podle urovne zanoreni v tele fce
