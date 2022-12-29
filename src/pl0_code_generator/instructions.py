@@ -49,24 +49,3 @@ class Op(Enum):
     gt = 12
     le = 13
 
-
-def inst(instruction: Inst):
-    """
-    It takes an instruction and returns its value
-
-    :param instruction: The instruction to be executed
-    :type instruction: t
-    :return: The value of the instruction.
-    """
-    return instruction.value
-
-
-def op(operation: Op):
-    """
-    Return the value of the operation.
-
-    :param operation: The operation to perform
-    :type operation: o
-    :return: The value of the operation.
-    """
-    return operation.value

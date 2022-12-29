@@ -1,1 +1,1 @@
-from src.pl0_code_generator.pl0 import *
+from src.pl0_code_generator.pl0 import Pl0
