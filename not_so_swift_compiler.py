@@ -1,4 +1,4 @@
-from src.main import main
+from src.start_compiler import start_compiler
 
 if __name__ == '__main__':
     import argparse
@@ -11,4 +11,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(input_file_name=args.f_input, output_dir=args.out)
+    start_compiler(input_file_name=args.f_input, output_dir=args.out)

@@ -5,7 +5,7 @@
 
 from unittest import TestCase
 
-from src.main import main
+from src.start_compiler import start_compiler
 
 
 # It's a class that inherits from the TestCase class, and it's called Test
@@ -15,7 +15,7 @@ class Test(TestCase):
         """
         It tests the operation of the function.
         """
-        code = main("../sample_input/operation.swift")
+        code = start_compiler("../sample_input/operation.swift")
         self.assertEqual(
             """0 INT 0 3
 1 INT 0 1
@@ -28,7 +28,7 @@ class Test(TestCase):
         """
         It tests the declaration of a variable.
         """
-        code = main("../sample_input/declaration.swift")
+        code = start_compiler("../sample_input/declaration.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 555
@@ -45,7 +45,7 @@ class Test(TestCase):
         """
         It tests the operators
         """
-        code = main("../sample_input/operators.swift")
+        code = start_compiler("../sample_input/operators.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 40
@@ -66,7 +66,7 @@ class Test(TestCase):
         It tests if the
         condition is true.
         """
-        code = main("../sample_input/if.swift")
+        code = start_compiler("../sample_input/if.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 0
@@ -83,7 +83,7 @@ class Test(TestCase):
 """, code, "if")
 
     def test_if_and(self):
-            code = main("../sample_input/if_and.swift")
+            code = start_compiler("../sample_input/if_and.swift")
             self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 1
@@ -109,7 +109,7 @@ class Test(TestCase):
 """, code, "if_and")
 
     def test_if_and_or(self):
-            code = main("../sample_input/if_and_or.swift")
+            code = start_compiler("../sample_input/if_and_or.swift")
             self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 1
@@ -137,7 +137,7 @@ class Test(TestCase):
 """, code, "if_and_or")
 
     def test_if_or(self):
-            code = main("../sample_input/if_or.swift")
+            code = start_compiler("../sample_input/if_or.swift")
             self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 1
@@ -167,7 +167,7 @@ class Test(TestCase):
 """, code, "if_or")
 
     def test_if_else(self):
-        code = main("../sample_input/if_else.swift")
+        code = start_compiler("../sample_input/if_else.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 0
@@ -189,7 +189,7 @@ class Test(TestCase):
 """, code, "if_else")
 
     def test_if_if_else(self):
-        code = main("../sample_input/if_if_else.swift")
+        code = start_compiler("../sample_input/if_if_else.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 1
@@ -215,7 +215,7 @@ class Test(TestCase):
 """, code, "if_if_else")
 
     def test_multiple_decl(self):
-        code = main("../sample_input/multiple_decl.swift")
+        code = start_compiler("../sample_input/multiple_decl.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 40
@@ -235,7 +235,7 @@ class Test(TestCase):
 """, code, "multiple_decl")
 
     def test_while(self):
-        code = main("../sample_input/while.swift")
+        code = start_compiler("../sample_input/while.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 5
@@ -257,7 +257,7 @@ class Test(TestCase):
 """, code, "while")
 
     def test_repeat_while(self):
-        code = main("../sample_input/repeat.swift")
+        code = start_compiler("../sample_input/repeat.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 100
@@ -275,7 +275,7 @@ class Test(TestCase):
 """, code, "test_repeat_while")
 
     def test_for(self):
-        code = main("../sample_input/for.swift")
+        code = start_compiler("../sample_input/for.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 0
@@ -300,7 +300,7 @@ class Test(TestCase):
 """, code, "for")
 
     def test_func(self):
-        code = main("../sample_input/func_simple.swift")
+        code = start_compiler("../sample_input/func_simple.swift")
         self.assertEqual("""0 INT 0 3
 1 JMP 0 28
 2 INT 0 3
@@ -344,7 +344,7 @@ class Test(TestCase):
 """, code, "func")
 
     def test_func_very_simple(self):
-        code = main("../sample_input/func_very_simple.swift")
+        code = start_compiler("../sample_input/func_very_simple.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 555
@@ -369,7 +369,7 @@ class Test(TestCase):
 """, code, "func_very_simple")
 
     def test_ternary_operator(self):
-        code = main("../sample_input/ternary_operator.swift")
+        code = start_compiler("../sample_input/ternary_operator.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 100
@@ -390,7 +390,7 @@ class Test(TestCase):
 """, code, "ternary_operator")
 
     def test_for_in_func(self):
-            code = main("../sample_input/for_in_func.swift")
+            code = start_compiler("../sample_input/for_in_func.swift")
             self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 52
@@ -426,7 +426,7 @@ class Test(TestCase):
 """, code, "for_in_func")
 
     def test_program(self):
-        code = main("../sample_input/program.swift")
+        code = start_compiler("../sample_input/program.swift")
         self.assertEqual("""0 INT 0 3
 1 JMP 0 28
 2 INT 0 3
@@ -588,7 +588,7 @@ class Test(TestCase):
 """, code, "program")
 
     def test_complex_program(self):
-        code = main("../sample_input/complex_program.swift")
+        code = start_compiler("../sample_input/complex_program.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
 2 LIT 0 52
