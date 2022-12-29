@@ -15,6 +15,7 @@ School Project: **Not so Swift Language** compiler
 - while
 - repeat while
 - ternary operator
+- boolean
 -------
 todo
 
@@ -23,8 +24,9 @@ todo
 
 [comment]: <> (    for index in 1...5 { some code })
 
-- boolean
-- closures (lambda expressions)
+
+- array
+- string
 
 
 

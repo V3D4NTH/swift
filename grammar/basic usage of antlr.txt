@@ -1,1 +1,0 @@
- antlr4-parse .\Swift5Lexer.g4 .\Swift5Parser.g4 statement -gui ..\sample_input\func_very_simple.swift
