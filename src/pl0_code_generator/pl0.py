@@ -21,6 +21,15 @@ class Pl0(Pl0Parent):
         """
         super().__init__(abstract_syntax_tree, symbol_table)
 
+    def generate_instructions(self):
+        """
+        It generates instructions for the PL/0.
+        """
+        self.generate_instruction(self.inst(Inst.int), 0, 3)
+        self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()), symbol_table=self.symbol_table)
+        # end of code
+        self.generate_instruction(self.inst(Inst.ret), 0, 0)
+
     # [JT] level stores the current scope, 0 for global, <identifier> for function scope
     # level_numerical current indentation
     def generate_code(self, sub_tree=None, level=0, symbol_table=None):
@@ -228,25 +237,12 @@ class Pl0(Pl0Parent):
         self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
         # [JT] find the current indentation of the identifier @var name
         real_level = find_real_level(sub_tree, index)
-        # [JT] find the entry in the symbol table by going bottom up in the stack of scopes in scope defined by @param level
+        # [JT] find the entry in the symbol table by going bottom up in the stack of scopes in scope defined by
+        # @param level
         symbol_table_entry = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, name)
         self.store_var(symbol_table_entry)
         index += len(sub_sub_tree)
         return index, level
-
-    def gen_opr(self, const1, operator: Op, const2, symbol_table=None, real_level=0):
-        """
-        It generates instructions for the operation of two constants
-        :param const1: The first constant to be used in the operation
-        :param operator: o = enum('+', '-', '*', '/', '<', '>', '=', '<=', '>=', '<>', 'and', 'or', 'not', 'neg')
-        :type operator: o
-        :param const2: The second constant to be used in the operation
-        """
-        if const1:
-            self.gen_const(const1, symbol_table, real_level=real_level)
-        if const2:
-            self.gen_const(const2, symbol_table, real_level=real_level)
-        self.generate_instruction(self.inst(Inst.opr), 0, str(operator))
 
     def gen_condition(self, condition, index, level, symbol_table=None):
         """
@@ -262,6 +258,18 @@ class Pl0(Pl0Parent):
         index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
         index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
         self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
+        if condition.name == "condition":
+            return condition, index, level
+        if condition.name == "compound_condition":
+            if condition.children[3].name == "&&":
+                and_mark = id("and_mark" + str(level))
+                self.generate_instruction(self.inst(Inst.jmc), 0, and_mark)
+            elif condition.children[3].name == "||":
+                or_mark = id("or_mark" + str(level))
+                self.generate_instruction(self.inst(Inst.jmc), 0, or_mark)
+            # generates next condition(s)
+            _, index, level = self.gen_condition(condition.children[4], index, level, symbol_table)
+        #      todo decide where to jump
         return condition, index, level
 
     def gen_func_call(self, sub_tree, symbol_table=None, level=0):

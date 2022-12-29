@@ -39,15 +39,6 @@ class Pl0Parent(Pl0Const):
         """
         self.code.append([inst_name, param1, param2])
 
-    def generate_instructions(self):
-        """
-        It generates instructions for the PL/0.
-        """
-        self.generate_instruction(self.inst(Inst.int), 0, 3)
-        self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()), symbol_table=self.symbol_table)
-        # end of code
-        self.generate_instruction(self.inst(Inst.ret), 0, 0)
-
     def print_code(self, out_method):
         """
         It prints the code of the program
@@ -117,6 +108,20 @@ class Pl0Parent(Pl0Const):
         :type symbol: SymbolRecord
         """
         self.generate_instruction(self.inst(Inst.lod), symbol.level, symbol.address)
+
+    def gen_opr(self, const1, operator: Op, const2, symbol_table=None, real_level=0):
+        """
+        It generates instructions for the operation of two constants
+        :param const1: The first constant to be used in the operation
+        :param operator: o = enum('+', '-', '*', '/', '<', '>', '=', '<=', '>=', '<>', 'and', 'or', 'not', 'neg')
+        :type operator: o
+        :param const2: The second constant to be used in the operation
+        """
+        if const1:
+            self.gen_const(const1, symbol_table, real_level=real_level)
+        if const2:
+            self.gen_const(const2, symbol_table, real_level=real_level)
+        self.generate_instruction(self.inst(Inst.opr), 0, str(operator))
 
     def gen_opr_add(self, const1=None, const2=None, symbol_table=None, real_level=0):
         self.gen_opr(const1, self.op(Op.add), const2, symbol_table=symbol_table, real_level=real_level)
