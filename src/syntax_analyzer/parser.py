@@ -68,10 +68,12 @@ def p_var_modification(p):
                      | id mulby expression
                      | id divby expression
                      | id equals expression
+                     | id lsparent int rsparent equals expression
     """
-
-    p[0] = make_node("var_modification", [p[1], p[2], p[3]],lineno=p.lexer.lineno)
-
+    if len(p) == 4:
+        p[0] = make_node("var_modification", [p[1], p[2], p[3]],lineno=p.lexer.lineno)
+    elif len(p) == 7:
+        p[0] = make_node("array_var_modification",[p[1],p[3],p[5],p[6]])
 
 # declaration statement
 # here we declare variable, constant or a function
@@ -216,20 +218,34 @@ def p_val_bool(p):
     val : bool
     """
     boolean_val = 1 if p[1] == "true" else 0
-    p[0] = make_node('var_value', [ boolean_val ],lineno=p.lexer.lineno)
+    p[0] = make_node('var_value_boolean', [ boolean_val ],lineno=p.lexer.lineno)
 
 # value assignment is an identifier
 def p_val_id(p):
     """
     val : id
     """
-    p[0] = make_node('var_value', [ p[1] ],lineno=p.lexer.lineno)
+    p[0] = make_node('var_value_identifier', [ p[1] ],lineno=p.lexer.lineno)
 def p_val_string(p):
     """
     val : quote id quote
     """
-    p[0] = make_node("string_value",[p[2]],lineno=p.lexer.lineno)
+    p[0] = make_node("var_value_string",[p[2],len(p[2])],lineno=p.lexer.lineno)
 
+def p_val_array(p):
+    """
+    val : lsparent integer_list rsparent
+    """
+    p[0] = make_node("array_value",[p[2]],lineno=p.lexer.lineno)
+def p_integer_list(p):
+    """
+    integer_list : int comma integer_list
+    |               int
+    """
+    if len(p) == 2:
+        p[0] = make_node("integer_list_tail",[p[1]])
+    elif len(p) == 4:
+        p[0] = make_node("integer_list",[p[1],p[3]])
 # rule for function declaration make_node contains operation and val, val contains the relevant information about
 # function, such as name, params, body and return type 'fun_dekl : func id lparent params rparent arrow dtype
 # comp_block'
@@ -373,17 +389,27 @@ def p_condition(p):
     |           expression relation_operator expression or condition
     |           exclamation_mark lparent condition rparent
     |           expression relation_operator expression
+    |           val
+    |           expression and condition
+    |           expression or condition
+    |           exclamation_mark lparent condition rparent and condition
+    |           exclamation_mark lparent condition rparent or condition
+
+
     """
-    if len(p) == 4 and (p[2] == "and" or p[2] == "or"):
+    if len(p) == 4 and (p[2] == "&&" or p[2] == "||"):
         p[0] = make_node("id_compound_condition",[p[1],p[2],p[3]])
     elif len(p) == 4:
         p[0] = make_node('condition', [p[1], p[2], p[3]],lineno=p.lexer.lineno)
     elif len(p) == 2:
-        p[0] = make_node("id_condition_simple",[p[1]])
+        p[0] = make_node("simple_condition",[p[1]])
     elif len(p) == 6:
         p[0] = make_node('compound_condition',[p[1],p[2],p[3],p[4],p[5]],lineno=p.lexer.lineno)
     elif len(p) == 5:
         p[0] = make_node("negation_condition",[p[3]])
+    elif len(p) == 7:
+        p[0] = make_node("compound_negation_condition",[p[3],p[5],p[6]])
+
 
 
 

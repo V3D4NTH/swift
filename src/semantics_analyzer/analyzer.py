@@ -72,7 +72,7 @@ class Analyzer:
             subtree_okay = self.__eval_factor(node)
         elif node_name == "function_call":
             subtree_okay = self.__eval_function_call(node)
-        elif node_name == "var_value":
+        elif node_name == "var_value" or node_name == "var_value_boolean" or node_name=="var_value_string" or node_name=="var_value_identifier":
             subtree_okay = self.__eval_var_value(node)
         elif node_name == "function_declaration":
             subtree_okay = self.__eval_function_declaration(node)
@@ -99,8 +99,12 @@ class Analyzer:
             subtree_okay = self.__eval_simple_condition(node)
         elif node_name == "id_compound_condition":
             subtree_okay = self.__eval_id_compound_condition(node)
+        elif node_name == "compound_negation_condition":
+            subtree_okay = self.__eval_compound_negation_condition(node)
         elif node_name == "var_modification":
             subtree_okay = self.__eval_var_modification(node)
+        elif node_name == "array_var_modification":
+            subtree_okay = self.__eval_array_var_modification(node)
         elif node_name == "if_stmt":
             subtree_okay = self.__eval_if_stmt(node)
         elif node_name == "if_else_stmt":
@@ -122,6 +126,52 @@ class Analyzer:
 
         self.__mark_visited(node)
         return subtree_okay
+
+
+    def __eval_compound_negation_condition(self,node):
+        children = node.get_children()
+        return True
+
+
+    def __eval_array_var_modification(self,node):
+        children = node.get_children()
+        return True
+
+    def __eval_id_compound_condition(self,node):
+        children = node.get_children()
+        expr = children[0]
+        condition = children[2]
+        if not self.__eval_node(expr):
+            print("Error in condition. Expression is not correct.")
+            return False
+        if self.__subtree_leaf_dtype != "Boolean":
+            print("Only boolean variables can be used in conditions.")
+            return False
+        if not self.__eval_node(condition):
+            print("Chained condition contains an error.")
+            return False
+        return True
+
+
+    #only value in condition
+    #the value must be an identifier
+    #and the variable must be a boolean
+    def __eval_simple_condition(self,node):
+        #store for restoration
+        tmp = self.__subtree_leaf_value
+
+        children = node.get_children()
+        var_value = children[0]
+        is_value_okay = self.__eval_node(var_value)
+        if not is_value_okay:
+            print("Error in condition. Expression contains an error.")
+            return False
+        if self.__subtree_leaf_dtype != "Boolean":
+            print("Error in condition. Only boolean values can be used in conditions.")
+            return False
+
+        self.__subtree_leaf_value = tmp
+        return True
 
 
     def __eval_ternary_operator(self,node):
@@ -662,13 +712,21 @@ class Analyzer:
         return True
 
     def __eval_var_value(self, node):
+        node_name = node.name
         value = node.get_children()[0].name
         self.__mark_visited(node.get_children()[0])
         self.__subtree_leaf_value = value
-        if type(value) is int:
+        if node_name == "var_value":
             self.__subtree_leaf_dtype = "Int"
             return True
-
+        elif node_name == "var_value_boolean":
+            self.__subtree_leaf_dtype = "Boolean"
+            return True
+        elif node_name == "var_value_string":
+            self.__subtree_leaf_dtype = "String"
+            return True
+        elif node_name == "var_value_identifier":
+            self.__subtree_leaf_dtype = "identifier"
         valid_identifier = self.__find_identifier(value)
         if not valid_identifier:
             print(f"Invalid identifier {value}")
@@ -697,8 +755,11 @@ class Analyzer:
     def __eval_data_type(self, node):
         data_type = node.get_children()[0]
         self.__mark_visited(node.get_children()[0])
+        # array vyhybka
+        if data_type.name == "array_type":
+            data_type = data_type.get_children()[0]
         if data_type.name not in self.__data_types:
-            print(f"Invalid data type {data_type.name}. Valid data types: Int, Boolean")
+            print(f"Invalid data type {data_type.name}. Valid data types: Int, Boolean, Array, String")
             return False
         return True
 

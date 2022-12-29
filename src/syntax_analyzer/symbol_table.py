@@ -148,9 +148,15 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 #spravne semanticka chyba pri vytvareni zaznamu -> bijou se nazvy v globalnim scopeu
                 if symbols[index].name in dic.keys():
                     raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
+                symbol_type = symbols[index].get_sisters()[0].children[0]
+                size = 1
+                if symbol_type.name == "array_type" or symbol_type == "String":
+                    tmp = symbol_type.get_children()
+                    symbol_type = tmp[0]
+                    size = tmp[1].name
                 dic[symbols[index].name] = (SymbolRecord(symbols[index].name,
-                                                                  symbol_type=symbols[index].get_sisters()[0].
-                                                                  children[0].name,
+                                                                  symbol_type=symbol_type.name,
+                                                                  size = size,
                                                                   level=level,
                                                                   real_level=real_level,
                                                                   tree_position=position_in_tree + index,
