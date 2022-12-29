@@ -5,10 +5,15 @@ from copy import copy
 
 from ete3 import Tree
 
-from src.pl0_code_generator.pl0_const import Inst as Inst, Op as Op, SymbolRecord, Pl0Const, inst, op
 import src.syntax_analyzer.utils as utils
 
 # > The class Pl0 is a class that represents a PL/0 program
+from src.pl0_code_generator.instructions import op, Op, Inst, inst
+from src.pl0_code_generator.pl0_const import Pl0Const
+from src.syntax_analyzer.symbol_record import SymbolRecord
+from src.syntax_analyzer.symbol_table import find_real_level, find_entry_in_symbol_table
+
+
 class Pl0(Pl0Const):
 
     def __init__(self, abstract_syntax_tree: Tree, symbol_table) -> None:
@@ -291,9 +296,9 @@ class Pl0(Pl0Const):
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
         #[JT] find the current indentation of the identifier @var name
-        real_level = utils.find_real_level(sub_tree,index)
+        real_level = find_real_level(sub_tree,index)
         #[JT] find the entry in the symbol table by going bottom up in the stack of scopes in scope defined by @param level
-        symbol_table_entry = utils.find_entry_in_symbol_table(symbol_table,self.current_scope,real_level,name)
+        symbol_table_entry = find_entry_in_symbol_table(symbol_table,self.current_scope,real_level,name)
         self.store_var(symbol_table_entry)
         index += len(sub_sub_tree)
         return index, level
@@ -306,7 +311,7 @@ class Pl0(Pl0Const):
         if type(const) == int:
             self.generate_instruction(inst(Inst.lit), 0, const)
             return
-        symbol = utils.find_entry_in_symbol_table(symbol_table,self.current_scope,real_level,const)
+        symbol = find_entry_in_symbol_table(symbol_table,self.current_scope,real_level,const)
         if symbol is not None:
             self.gen_load_symbol(symbol)
 
@@ -405,7 +410,7 @@ class Pl0(Pl0Const):
         :param index: the index of the current node in the tree
         :param symbol_table: a dictionary of variables and their values
         """
-        real_level = utils.find_real_level(sub_tree,index)
+        real_level = find_real_level(sub_tree,index)
         func_len = self.gen_func_call(sub_tree, symbol_table=symbol_table, level=level)
         if func_len is not None:
             return func_len
@@ -455,8 +460,8 @@ class Pl0(Pl0Const):
         symbol_name = sub_tree[index].children[0].name
         oper_and_equals = sub_tree[index].children[1]
         #[JT] calculate real level of indentation and find the symbol in symbol table
-        real_level = utils.find_real_level(sub_tree, index)
-        symbol = utils.find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, symbol_name)
+        real_level = find_real_level(sub_tree, index)
+        symbol = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, symbol_name)
 
         if sub_tree[index].name == "loop_step":
             self.gen_const(sub_tree[index].children[2].get_leaf_names()[0], symbol_table)

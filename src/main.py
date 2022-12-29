@@ -10,8 +10,8 @@ import ply.yacc as yy
 import src.syntax_analyzer as syntax
 import src.lex_analyzer as lexical
 import src.pl0_code_generator as gen
-from src.syntax_analyzer.utils import generate_table_of_symbols,find_real_level
 from src.semantics_analyzer.analyzer import Analyzer
+from src.syntax_analyzer.symbol_table import generate_table_of_symbols
 
 
 def generate_output_files(dst, generated_code, output_dir):

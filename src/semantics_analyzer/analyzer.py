@@ -1,6 +1,6 @@
 # class responsible from semantical analysis
 # TODO type checking, scope checking, semantics of the program
-import src.syntax_analyzer.utils as utils
+from src.syntax_analyzer.symbol_table import find_entry_in_symbol_table
 
 
 class Analyzer:
@@ -763,7 +763,7 @@ class Analyzer:
     # jdi od myho lokalniho scopeu az po globalni, jestli tu promennou nenajdes
     # TODO rozhodnout, kdy vidim a kdy nevidim na identifikator
     def __find_identifier(self, identifier):
-        symbol = utils.find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier)
+        symbol = find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier)
         if symbol is None:
             print(f"Identifier {identifier} not declared!")
             return False
