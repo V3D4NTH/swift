@@ -5,12 +5,11 @@ func someOtherFunction(d: Int) -> Int{
         var f: Int = d;
         f = 20;
         b *= 32;
-        return b;
     }
     else {
-        return b;
+        b *= 10;
     }
-
+        return b;
 }
 
 func someOtherFunction2(a:Int) -> Int{
