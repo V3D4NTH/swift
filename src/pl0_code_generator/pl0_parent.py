@@ -109,6 +109,13 @@ class Pl0Parent(Pl0Const):
         """
         self.generate_instruction(self.inst(Inst.lod), symbol.level, symbol.address)
 
+    def correct_jmc_for_logical_condition(self, x):
+        for i in self.code:
+            if i[2] == "or_mark":
+                i[2] = len(self.code) + 1
+            if i[2] == "and_mark":
+                i[2] = x
+
     def gen_opr(self, const1, operator: Op, const2, symbol_table=None, real_level=0):
         """
         It generates instructions for the operation of two constants

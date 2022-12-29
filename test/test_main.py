@@ -238,18 +238,22 @@ class Test(TestCase):
         code = main("../sample_input/while.swift")
         self.assertEqual("""0 INT 0 3
 1 INT 0 1
-2 LIT 0 100
+2 LIT 0 5
 3 STO 0 3
 4 LOD 0 3
 5 LIT 0 1
 6 OPR 0 12
-7 JMC 0 13
+7 JMC 0 17
 8 LOD 0 3
-9 LIT 0 1
-10 OPR 0 3
-11 STO 0 3
-12 JMP 0 4
-13 RET 0 0
+9 LIT 0 50
+10 OPR 0 10
+11 JMC 0 17
+12 LOD 0 3
+13 LIT 0 1
+14 OPR 0 3
+15 STO 0 3
+16 JMP 0 4
+17 RET 0 0
 """, code, "while")
 
     def test_repeat_while(self):

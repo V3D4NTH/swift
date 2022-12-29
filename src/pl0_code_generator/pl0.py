@@ -96,6 +96,7 @@ class Pl0(Pl0Parent):
         _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
 
         x = id("x" + str(level))
+        self.correct_jmc_for_logical_condition(x)
         self.generate_instruction(self.inst(Inst.jmc), 0, x)
 
         index, level = self.generate_code_again(index, level, symbol_table, body)
@@ -123,6 +124,7 @@ class Pl0(Pl0Parent):
         index, level = self.generate_code_again(index, level, symbol_table, body)
 
         _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
+        self.correct_jmc_for_logical_condition(len(self.code) + 2)
         self.generate_instruction(self.inst(Inst.jmc), 0, len(self.code) + 2)
         self.generate_instruction(self.inst(Inst.jmp), 0, start_address)
         return index, level
@@ -146,6 +148,7 @@ class Pl0(Pl0Parent):
         _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
 
         x = id("x" + str(level))
+        self.correct_jmc_for_logical_condition(x)
         self.generate_instruction(self.inst(Inst.jmc), 0, x)
 
         index, level = self.generate_code_again(index, level, symbol_table, body)
@@ -415,11 +418,7 @@ class Pl0(Pl0Parent):
             _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
 
             x = id("x" + str(level))
-            for i in self.code:
-                if i[2] == "or_mark":
-                    i[2] = len(self.code) + 1
-                if i[2] == "and_mark":
-                    i[2] = x
+            self.correct_jmc_for_logical_condition(x)
             # block 1
             sub_sub_tree = self.clear_tree(block1.iter_prepostorder())
             # shifting index to skip duplicates
