@@ -4,7 +4,8 @@
 from copy import copy
 
 from ete3 import Tree
-from src.pl0_code_generator.instructions import Inst, Op
+
+from src.pl0_code_generator.instructions import Inst
 from src.pl0_code_generator.pl0_parent import Pl0Parent
 from src.syntax_analyzer.symbol_table import find_real_level, find_entry_in_symbol_table
 
@@ -262,14 +263,15 @@ class Pl0(Pl0Parent):
             return condition, index, level
         if condition.name == "compound_condition":
             if condition.children[3].name == "&&":
-                and_mark = id("and_mark" + str(level))
+                and_mark = "and_mark"
                 self.generate_instruction(self.inst(Inst.jmc), 0, and_mark)
             elif condition.children[3].name == "||":
-                or_mark = id("or_mark" + str(level))
+                or_mark = "or_mark"
+                self.generate_instruction(self.inst(Inst.lit), 0, -1)
+                self.generate_instruction(self.inst(Inst.opr), 0, 2)
                 self.generate_instruction(self.inst(Inst.jmc), 0, or_mark)
             # generates next condition(s)
             _, index, level = self.gen_condition(condition.children[4], index, level, symbol_table)
-        #      todo decide where to jump
         return condition, index, level
 
     def gen_func_call(self, sub_tree, symbol_table=None, level=0):
@@ -411,11 +413,17 @@ class Pl0(Pl0Parent):
             block2 = sub_tree[index].children[2]
         if condition.children[1].get_leaf_names()[0] in self.cond_expressions:
             _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
+
+            x = id("x" + str(level))
+            for i in self.code:
+                if i[2] == "or_mark":
+                    i[2] = len(self.code) + 1
+                if i[2] == "and_mark":
+                    i[2] = x
             # block 1
             sub_sub_tree = self.clear_tree(block1.iter_prepostorder())
             # shifting index to skip duplicates
             # recursive call
-            x = id("x" + str(level))
             self.generate_instruction(self.inst(Inst.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
             #            self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
@@ -423,10 +431,7 @@ class Pl0(Pl0Parent):
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
-                    jmc_address = len(self.code)
-                    if block2 is not None:
-                        jmc_address += 1
-                    i[2] = jmc_address
+                    i[2] = len(self.code) + 1
             if block2 is not None:
                 # block 2
                 sub_sub_tree = self.clear_tree(block2.iter_prepostorder())

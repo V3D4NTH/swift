@@ -74,7 +74,7 @@ class Test(TestCase):
 4 LIT 0 52
 5 LIT 0 43
 6 OPR 0 12
-7 JMC 0 12
+7 JMC 0 13
 8 LIT 0 32
 9 LOD 0 3
 10 OPR 0 4
@@ -84,13 +84,87 @@ class Test(TestCase):
 
     def test_if_and(self):
             code = main("../sample_input/if_and.swift")
-            self.assertEqual("""
-    """, code, "if_and")
+            self.assertEqual("""0 INT 0 3
+1 INT 0 1
+2 LIT 0 1
+3 STO 0 3
+4 LOD 0 3
+5 LIT 0 5
+6 OPR 0 10
+7 JMC 0 21
+8 LIT 0 52
+9 LIT 0 43
+10 OPR 0 12
+11 JMC 0 21
+12 LOD 0 3
+13 LIT 0 5
+14 OPR 0 12
+15 JMC 0 21
+16 LIT 0 32
+17 LOD 0 3
+18 OPR 0 4
+19 STO 0 3
+20 LIT 0 32
+21 RET 0 0
+""", code, "if_and")
+
+    def test_if_and_or(self):
+            code = main("../sample_input/if_and_or.swift")
+            self.assertEqual("""0 INT 0 3
+1 INT 0 1
+2 LIT 0 1
+3 STO 0 3
+4 LOD 0 3
+5 LIT 0 5
+6 OPR 0 12
+7 LIT 0 -1
+8 OPR 0 2
+9 JMC 0 18
+10 LIT 0 52
+11 LIT 0 43
+12 OPR 0 12
+13 JMC 0 23
+14 LOD 0 3
+15 LIT 0 5
+16 OPR 0 10
+17 JMC 0 23
+18 LIT 0 32
+19 LOD 0 3
+20 OPR 0 4
+21 STO 0 3
+22 LIT 0 32
+23 RET 0 0
+""", code, "if_and_or")
 
     def test_if_or(self):
             code = main("../sample_input/if_or.swift")
-            self.assertEqual("""
-    """, code, "if_or")
+            self.assertEqual("""0 INT 0 3
+1 INT 0 1
+2 LIT 0 1
+3 STO 0 3
+4 LOD 0 3
+5 LIT 0 5
+6 OPR 0 12
+7 LIT 0 -1
+8 OPR 0 2
+9 JMC 0 20
+10 LIT 0 52
+11 LIT 0 43
+12 OPR 0 12
+13 LIT 0 -1
+14 OPR 0 2
+15 JMC 0 20
+16 LIT 0 1
+17 LIT 0 1
+18 OPR 0 12
+19 JMC 0 25
+20 LIT 0 32
+21 LOD 0 3
+22 OPR 0 4
+23 STO 0 3
+24 LIT 0 32
+25 RET 0 0
+""", code, "if_or")
 
     def test_if_else(self):
         code = main("../sample_input/if_else.swift")
@@ -127,7 +201,7 @@ class Test(TestCase):
 8 LIT 0 100
 9 LIT 0 43
 10 OPR 0 10
-11 JMC 0 16
+11 JMC 0 17
 12 LIT 0 32
 13 LOD 0 3
 14 OPR 0 4
@@ -559,7 +633,7 @@ class Test(TestCase):
 45 LIT 0 1
 46 LOD 0 3
 47 OPR 0 10
-48 JMC 0 65
+48 JMC 0 66
 49 LIT 0 32
 50 LOD 0 3
 51 OPR 0 4
