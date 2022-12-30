@@ -258,24 +258,32 @@ class Pl0(Pl0Parent):
         :param level: the level of indentation
         :param symbol_table: a dictionary of the form {'var_name': 'var_type'}
         """
-        index += 2
-        index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
-        index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
-        self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
+        if len(condition.children) > 1 and condition.children[1].get_leaf_names()[0] in self.cond_expressions.keys():
+            index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
+            index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
+            self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
+            shift = 3
+        else:
+            if condition.children[0].get_leaf_names()[0] not in symbol_table:
+                self.generate_instruction(self.inst(Inst.lit), 0, int(condition.children[0].get_leaf_names()[0]))
+            else:
+                self.gen_load_symbol(symbol_table[condition.children[0].get_leaf_names()[0]])
+            shift = 1
         if condition.name == "condition":
-            return condition, index, level
-        if condition.name == "compound_condition":
-            if condition.children[3].name == "&&":
+            return False, index, level
+        if len(condition.children) > 2:
+            if condition.children[shift].name == "&&":
                 and_mark = "and_mark"
                 self.generate_instruction(self.inst(Inst.jmc), 0, and_mark)
-            elif condition.children[3].name == "||":
+            elif condition.children[shift].name == "||":
                 or_mark = "or_mark"
                 self.generate_instruction(self.inst(Inst.lit), 0, -1)
                 self.generate_instruction(self.inst(Inst.opr), 0, 2)
                 self.generate_instruction(self.inst(Inst.jmc), 0, or_mark)
             # generates next condition(s)
-            _, index, level = self.gen_condition(condition.children[4], index, level, symbol_table)
-        return condition, index, level
+            _, index, level = self.gen_condition(condition.children[shift + 1], index, level, symbol_table)
+            return True, index, level
+        return False, index, level
 
     def gen_func_call(self, sub_tree, symbol_table=None, level=0):
         """
@@ -414,11 +422,12 @@ class Pl0(Pl0Parent):
         block2 = None
         if sub_tree[index].name == "if_else_stmt" or sub_tree[index].name == "ternary_operator":
             block2 = sub_tree[index].children[2]
-        if condition.children[1].get_leaf_names()[0] in self.cond_expressions:
+        if "condition" in condition.name:
             _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
 
             x = id("x" + str(level))
             self.correct_jmc_for_logical_condition(x)
+            index += len(self.clear_tree(condition.iter_prepostorder()))
             # block 1
             sub_sub_tree = self.clear_tree(block1.iter_prepostorder())
             # shifting index to skip duplicates
@@ -430,7 +439,10 @@ class Pl0(Pl0Parent):
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
-                    i[2] = len(self.code) + 1
+                    jmc_address = len(self.code)
+                    if block2 is not None:
+                        jmc_address += 1
+                    i[2] = jmc_address
             if block2 is not None:
                 # block 2
                 sub_sub_tree = self.clear_tree(block2.iter_prepostorder())
