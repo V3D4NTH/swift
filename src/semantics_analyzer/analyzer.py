@@ -123,6 +123,8 @@ class Analyzer:
             subtree_okay = self.__eval_negation_condition(node)
         elif node_name == "const_expression_term":
             subtree_okay = True
+        elif node_name == "array_var_modification":
+            subtree_okay = self.__eval_array_var_modification(node)
 
         self.__mark_visited(node)
         return subtree_okay
@@ -130,6 +132,14 @@ class Analyzer:
 
     def __eval_compound_negation_condition(self,node):
         children = node.get_children()
+        left_cond = children[0]
+        right_cond = children[2]
+        if not self.__eval_node(left_cond):
+            print("Error in compound condition. Condition on the left side contains an error.")
+            return False
+        if not self.__eval_node(right_cond):
+            print("Error in compound condition. Condition on the right side contains an error.")
+            return False
         return True
 
 
@@ -635,7 +645,7 @@ class Analyzer:
 
     def __eval_var_declaration_expression(self, node):
         children = node.get_children()
-
+        tmp = self.__subtree_leaf_dtype
         data_type = children[1]
         data_type_valid = self.__eval_node(data_type)
         if not data_type_valid:
@@ -644,6 +654,7 @@ class Analyzer:
         data_type = data_type.get_children()[0]
         expression = children[2]
         # type_operation_valid = self.__check_type_value_compatibility(data_type.name,expression)
+        self.__subtree_leaf_dtype = tmp
         expression_valid = self.__eval_node(expression)
         if data_type.name == "Boolean" and (self.__subtree_leaf_value == 1 or self.__subtree_leaf_value == 0):
             self.__subtree_leaf_dtype = "Boolean"
@@ -658,6 +669,7 @@ class Analyzer:
         if not data_type_compatible:
             print(f"Type mismatch, cannot assign expression of type {self.__subtree_leaf_dtype}"
                   f" to variable with type {data_type.name}")
+            return False
         return data_type_compatible
 
     def __eval_expression_term(self, node):
@@ -761,6 +773,7 @@ class Analyzer:
         if data_type.name not in self.__data_types:
             print(f"Invalid data type {data_type.name}. Valid data types: Int, Boolean, Array, String")
             return False
+        self.__subtree_leaf_dtype = data_type.name
         return True
 
     # mark node as visited
