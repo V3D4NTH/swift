@@ -89,6 +89,8 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                         continue
                     if type(identifier_name) is int:
                         i += 1
+                        if i >= len(ids_and_types):
+                            break
                         identifier_name = ids_and_types[i]
 
                     dtype = ids_and_types[i+1]
