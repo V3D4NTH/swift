@@ -47,7 +47,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     # [JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
     semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
-        return
+        raise Exception("Semantic error...")
 
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
