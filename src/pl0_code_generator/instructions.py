@@ -26,7 +26,7 @@ class Op(Enum):
     4    *
     5    div - /
     6    mod - modulo  %
-    7    odd 1,2,3,5... test
+    7    odd 1,3,5...
     8    equality
     9    unequality <>
     10    <

@@ -3,6 +3,8 @@
 #
 import os
 
+from src.pl0_vm.p_machine import run_pl0_code
+
 
 def generate_output_files(dst, generated_code, output_dir):
     """
@@ -53,6 +55,8 @@ def save_generated_code(generated_code, formatted_input_code, output_dir):
             txt.writelines("\n")
             txt.writelines("----------generated code------------\n")
             txt.writelines(generated_code.return_code())
+            txt.writelines("-------------PL/0 start-------------\n")
+            # txt.writelines(run_pl0_code(generated_code.code))
             txt.writelines("------------------------------------")
 
         with open(output_dir + "/generated_code_only.txt", mode="w") as txt:
