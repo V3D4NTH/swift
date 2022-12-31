@@ -125,9 +125,28 @@ class Analyzer:
             subtree_okay = True
         elif node_name == "array_var_modification":
             subtree_okay = self.__eval_array_var_modification(node)
+        elif node_name == "array_value":
+            subtree_okay = self.__eval_array_value(node)
 
         self.__mark_visited(node)
         return subtree_okay
+
+
+    def __eval_array_value(self,node):
+        children = node.get_children()
+        int_list = children[0]
+        int_count = 1
+        while True:
+            val = int_list.get_children()
+            if len(val) == 1:
+                break
+            #value assigned to array index - can be only integer - no need to check it
+            array_value = val[0]
+            int_list = val[1]
+            int_count += 1
+        self.__subtree_leaf_value = int_count
+        self.__subtree_leaf_dtype = "Array"
+        return True
 
 
     def __eval_compound_negation_condition(self,node):
@@ -145,6 +164,26 @@ class Analyzer:
 
     def __eval_array_var_modification(self,node):
         children = node.get_children()
+        identifier = children[0].name
+        index = children[1].name
+        # if array assignment cannot be done for every operation (for some reason), we can catch it here
+        operation = children[2].name
+        expression = children[3]
+        if not self.__find_identifier(identifier):
+            print(f"Variable {identifier} is not defined.")
+            return False
+
+        if self.__identifier_table_entry.size <= index:
+            print(f"Error array out of bounds. Index value {index} is too large. Lenght of array {identifier} is {self.__identifier_table_entry.size}.")
+            return False
+
+        if not self.__eval_node(expression):
+            print(f"Expression contains an error. That value cannot be assigned to array.")
+            return False
+        if self.__subtree_leaf_dtype != "Int":
+            print(f"Only integers can be assigned to array {identifier}. Array with value {self.__subtree_leaf_dtype} is not supported.")
+            return False
+
         return True
 
     def __eval_id_compound_condition(self,node):
@@ -579,6 +618,8 @@ class Analyzer:
             elif last_stmt_in_body != "return_statement":
                 print(f"Last statement in function block which is of type {return_type_val} must be a return statement")
                 return False
+            #if return_type_val == "array_type":
+
 
         # restore previous scope
         self.level = previous_level
@@ -647,6 +688,8 @@ class Analyzer:
         children = node.get_children()
         tmp = self.__subtree_leaf_dtype
         data_type = children[1]
+        identifier = children[0].name
+        self.__find_identifier(identifier)
         data_type_valid = self.__eval_node(data_type)
         if not data_type_valid:
             print(f"Invalid data type when declaring a variable")
@@ -665,11 +708,17 @@ class Analyzer:
         #neresim to dal - vim, ze je to spravne, protoze to je vyhodnoceno v ramci gramatiky
         if expression.name == "const_expression_term":
             return True
+        if data_type.name == "array_type":
+            data_type = data_type.get_children()[0]
+            if self.__identifier_table_entry.size != self.__subtree_leaf_value:
+                print(f"Error when declaring an array with values. Expected {self.__identifier_table_entry.size} items, got only {self.__subtree_leaf_value}.")
+                return False
         data_type_compatible = data_type.name == self.__subtree_leaf_dtype
         if not data_type_compatible:
             print(f"Type mismatch, cannot assign expression of type {self.__subtree_leaf_dtype}"
                   f" to variable with type {data_type.name}")
             return False
+
         return data_type_compatible
 
     def __eval_expression_term(self, node):
@@ -831,6 +880,9 @@ class Analyzer:
         if function_param_type != argument_type:
             print(f"Argument missmatch, expected argument with type {function_param_type} for parameter {parameter.name},\
              instead got argument with type {argument_type}")
+            return False
+        if parameter.type == "Array" and self.__subtree_leaf_value != parameter.size:
+            print(f"Argument missmatch, expected array with length {parameter.size}, got array with length {self.__subtree_leaf_value}")
             return False
         return True
 
