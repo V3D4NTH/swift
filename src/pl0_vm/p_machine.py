@@ -1,6 +1,8 @@
 #  date: 31. 12. 2022
 #  author: Daniel Schnurpfeil
 #
+from copy import copy
+
 from src.pl0_code_generator.instructions import Inst, Op
 
 
@@ -12,6 +14,9 @@ def ret_stck_str(stack: list) -> str:
 
 
 def run_pl0_code(generated_code: list) -> str:
+    if len(generated_code) > 130:
+        return "code is too long"
+    static_base = 0
     stack_pointer = -1
     instruction_pointer = 0
     stack = []
@@ -91,15 +96,21 @@ def run_pl0_code(generated_code: list) -> str:
                 stack_pointer -= 1
 
         elif generated_code[instruction_pointer][0] == Inst.lod.value:
-            stack[stack_pointer] = stack[generated_code[instruction_pointer][2]]
+            stack_pointer += 1
+            if stack_pointer - len(stack) > -1:
+                stack.append(0)
+            stack[stack_pointer] = stack[generated_code[instruction_pointer][2] + static_base]
 
         elif generated_code[instruction_pointer][0] == Inst.sto.value:
-            stack[generated_code[instruction_pointer][2]] = stack[stack_pointer]
+            stack[generated_code[instruction_pointer][2] + static_base] = stack[stack_pointer]
+            stack_pointer -= 1
 
         elif generated_code[instruction_pointer][0] == Inst.cal.value:
             stack.append(stack_pointer)
             stack.append(0)
-            stack.append(generated_code[instruction_pointer][2])
+            stack.append(copy(instruction_pointer))
+            instruction_pointer = generated_code[instruction_pointer][2] - 1
+            static_base = stack_pointer + 1
 
         elif generated_code[instruction_pointer][0] == Inst.int.value:
             stack_pointer += generated_code[instruction_pointer][2]
@@ -107,12 +118,19 @@ def run_pl0_code(generated_code: list) -> str:
                 for _ in range(stack_pointer - len(stack) + 1):
                     stack.append(0)
 
+        elif generated_code[instruction_pointer][0] == Inst.ret.value:
+            if static_base == 0:
+                break
+            instruction_pointer = stack[static_base + 2]
+            stack_pointer = static_base - 1
+            static_base = 0
+
         elif generated_code[instruction_pointer][0] == Inst.jmc.value:
-            if stack[stack_pointer - 1] == 0:
-                instruction_pointer = generated_code[instruction_pointer][2]
+            if stack[stack_pointer] == 0:
+                instruction_pointer = generated_code[instruction_pointer][2] - 1
 
         elif generated_code[instruction_pointer][0] == Inst.jmp.value:
-            instruction_pointer = generated_code[instruction_pointer][2]
+            instruction_pointer = generated_code[instruction_pointer][2] - 1
 
         if instruction_pointer < 0 or instruction_pointer > len(generated_code) or \
                 stack_pointer < 0 or stack_pointer > len(stack):
