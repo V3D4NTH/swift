@@ -693,3 +693,8 @@ class Test(TestCase):
 65 STO 0 3
 66 RET 0 0
 """, code, "complex_program")
+
+    # def test_array(self):
+    #         code = start_compiler("../sample_input/not_tested/array.swift")
+    #         self.assertEqual("""
+    #  """, code, "array")
