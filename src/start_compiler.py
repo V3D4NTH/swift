@@ -19,6 +19,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
 
     :param input_file_name: The name of the file to be parsed
     :type input_file_name: str
+    :param output_dir: The directory where the output files will be saved, defaults to ./ (optional)
     :param show_tree_with_pyqt5: If True, the tree will be displayed using PyQt5, defaults to False (optional)
     """
 

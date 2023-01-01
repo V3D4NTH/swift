@@ -189,15 +189,31 @@ class Test(TestCase):
             code = start_compiler("../sample_input/complex_bool.swift")
             self.assertEqual("""0 INT 0 3
 1 LIT 0 1
-2 JMC 0 10
+2 JMC 0 26
 3 LIT 0 1
-4 LIT 0 0
+4 LIT 0 -10
 5 OPR 0 12
-6 JMC 0 10
-7 INT 0 1
-8 LIT 0 9000
-9 STO 0 3
-10 RET 0 0
+6 JMC 0 26
+7 LIT 0 -5
+8 LIT 0 -5
+9 OPR 0 12
+10 LIT 0 -1
+11 OPR 0 2
+12 LIT 0 -1
+13 OPR 0 2
+14 JMC 0 23
+15 LIT 0 0
+16 LIT 0 -1
+17 OPR 0 2
+18 JMC 0 23
+19 LIT 0 0
+20 LIT 0 -1
+21 OPR 0 2
+22 JMC 0 26
+23 INT 0 1
+24 LIT 0 9000
+25 STO 0 3
+26 RET 0 0
 """, code, "complex_bool")
 
     def test_if_else(self):
