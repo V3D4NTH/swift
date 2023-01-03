@@ -6,7 +6,7 @@
 class SymbolRecord:
 
     def __init__(self, name, symbol_type, const=False, level=0, real_level=0, address=3, size=0,
-                 params=None, return_type=None, param=False, tree_position=0, locals_vars=None):
+                 params=None, return_type=None, param=False, tree_position=0, locals_vars=None,lineno=False):
         """
         This function initializes the symbol record
 
@@ -28,6 +28,7 @@ class SymbolRecord:
         self.real_level = real_level
         self.address = address
         self.size = size
+        self.lineno = lineno
         self.param = param
         self.tree_position = tree_position
         if self.type == "func":

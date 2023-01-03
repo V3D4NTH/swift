@@ -87,7 +87,7 @@ class Pl0Parent(Pl0Const):
         if type(const) == int:
             self.generate_instruction(self.inst(Inst.lit), 0, const)
             return
-        symbol = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, const)
+        symbol = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, const,float("inf"))
         if symbol is not None:
             self.gen_load_symbol(symbol)
 

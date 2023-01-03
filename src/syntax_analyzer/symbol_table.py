@@ -12,10 +12,12 @@ def find_real_level(symbols, index):
     return real_level_result
 
 
-def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name):
+def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name,lineno):
     # [JT] global scope
     if real_level == 0:
         if symbol_name not in symbol_table:
+            return None
+        if symbol_table[symbol_name].lineno > lineno:
             return None
         return symbol_table[symbol_name]
     # [JT] we are searching for entry of identifier in glob al scope
@@ -32,14 +34,14 @@ def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name):
             if real_level >= scope_count:
                 continue
             indent_dic = symbol_table['_scopes'][real_level]
-            if symbol_name in indent_dic:
+            if symbol_name in indent_dic and indent_dic[symbol_name].lineno <= lineno:
                 return indent_dic[symbol_name]
 
         if symbol_name not in symbol_table:
             return None
 
         # we did not find the variable in indented blocks => it must be in global scope
-        return symbol_table[symbol_name]
+        return symbol_table[symbol_name] if symbol_table[symbol_name].lineno <= lineno else None
     else:
         # retrieve variables in the function block
         function_symbol_table = symbol_table[level]
@@ -50,14 +52,13 @@ def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name):
             if real_level >= scope_count:
                 continue
             indent_dic = function_symbol_table.locals[real_level]
-            if symbol_name in indent_dic:
+            if symbol_name in indent_dic and indent_dic[symbol_name].lineno <= lineno:
                 return indent_dic[symbol_name]
 
         if symbol_name in function_symbol_table.params:
             return function_symbol_table.params[symbol_name]
-        if symbol_name in symbol_table:
+        if symbol_name in symbol_table and symbol_table[symbol_name].lineno <= lineno:
             return symbol_table[symbol_name]
-        print(f"Identifier {symbol_name} not declared!")
         return None
 
 
@@ -78,6 +79,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
             params = {}
             local_address = 3
             ids_and_types = symbols[index].get_sisters()[0].get_leaf_names()
+            lineno = symbols[index].get_sisters()[1].lineno
             if len(ids_and_types) > 1:
                 i = 0
                 #[JT] while loop had to be used instead of for loop so i could dynamically change the driving variable 'i'
@@ -103,7 +105,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                     params[ids_and_types[i]] = (
                         SymbolRecord(identifier_name, dtype,size=size, param=True, level=level,
                                      tree_position=position_in_tree + index,
-                                     real_level=real_level,
+                                     real_level=real_level, lineno=lineno,
                                      address=local_address))
                     i += 2
 
@@ -113,6 +115,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 SymbolRecord(symbols[index].name, "func", params=params, level=level, real_level=real_level,
                              tree_position=position_in_tree + index,
                              address=address,
+                             lineno=lineno,
                              return_type=symbols[index].get_sisters()[1].get_leaf_names()[0]))
             address += 1
             func_body = symbols[index].get_sisters()[2].get_leaves()
@@ -124,6 +127,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
 
         if ancestor.name == "var_declaration_expression" or ancestor.name == "var_declaration":
             real_level = find_real_level(symbols, index)
+            lineno = symbols[index].get_sisters()[0].lineno
             if level != "0" and symbol_table[level].locals is None:
                 # slovniky lokalnich promennych podle urovne zanoreni v tele fce
                 symbol_table[level].locals = []
@@ -138,6 +142,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                       symbol_type=symbol_type.name,
                                                                                       level=level,
                                                                                       size = size,
+                                                                                      lineno = lineno,
                                                                                       real_level=real_level,
                                                                                       tree_position=position_in_tree + index,
                                                                                       address=address))})
@@ -184,9 +189,11 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                     tmp = symbol_type.get_children()
                     symbol_type = tmp[0]
                     size = tmp[1].name
+                lineno = symbols[index].get_sisters()[0].lineno
                 dic[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                          symbol_type=symbol_type.name,
                                                          size=size,
+                                                         lineno=lineno,
                                                          level=level,
                                                          real_level=real_level,
                                                          tree_position=position_in_tree + index,

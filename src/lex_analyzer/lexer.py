@@ -25,10 +25,9 @@ for r in tokens:
     reserved_map[r.lower()] = r
 
 
-# TODO low prio problem - .* sezere vsechno od //
 def t_comment(t):
-    r'//.*'
-    t.lexer.lineno += t.value.count('\n')
+    r'\/\/.*'
+    pass
 
 def t_Int(t):
     r'Int'
@@ -83,13 +82,12 @@ def t_id(t):
 # token newline -> inkrementuj line number
 def t_newline(t):
     r'\n+'
-    t.lexer.lineno += t.value.count("\n")
+    t.lexer.lineno += len(t.value)
 
 
 # neznamy token, zahlas chybu
 def t_error(t):
-    print(f"Unknown token: {t.value[0]}")
-    t.lexer.skip(1)
+    print(f"Syntax error: '{t.value[0]}' at {t.lineno}")
 
 
 # zadefinuj token jako funkci - umozni k tomu pribalit nejaky vykonny kod

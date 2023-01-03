@@ -19,6 +19,7 @@ def make_node(node_name: str, children=None, lineno=-1) -> Tree:
     :return: A tree with the name of the node and the children
     """
     ast = Tree(name=node_name)
+    ast.add_feature('lineno',lineno)
     if children is None:
         return ast
     for i in children:
@@ -42,7 +43,3 @@ def is_integer(node):
 
 def get_integer_node_value(node):
     return node.get_leaf_names()[0]
-
-
-def get_line_number(node):
-    return line_numbers[id(node)]

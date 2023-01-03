@@ -73,7 +73,7 @@ def p_var_modification(p):
     if len(p) == 4:
         p[0] = make_node("var_modification", [p[1], p[2], p[3]],lineno=p.lexer.lineno)
     elif len(p) == 7:
-        p[0] = make_node("array_var_modification",[p[1],p[3],p[5],p[6]])
+        p[0] = make_node("array_var_modification",[p[1],p[3],p[5],p[6]],lineno=p.lexer.lineno)
 
 # declaration statement
 # here we declare variable, constant or a function
@@ -100,7 +100,6 @@ def p_var_dekl(p):
         p[0] = make_node('var_declaration_expression', [p[1], p[3], p[5]],lineno=p.lexer.lineno)
     else:
         p[0] = make_node('var_declaration', [p[1], p[3]],lineno=p.lexer.lineno)
-
 
 # data type, can be expanded in the future, so far our language accepts only integers and booleans
 def p_dtype(p):
@@ -243,9 +242,9 @@ def p_integer_list(p):
     |               int
     """
     if len(p) == 2:
-        p[0] = make_node("integer_list_tail",[p[1]])
+        p[0] = make_node("integer_list_tail",[p[1]],lineno=p.lexer.lineno)
     elif len(p) == 4:
-        p[0] = make_node("integer_list",[p[1],p[3]])
+        p[0] = make_node("integer_list",[p[1],p[3]],lineno=p.lexer.lineno)
 # rule for function declaration make_node contains operation and val, val contains the relevant information about
 # function, such as name, params, body and return type 'fun_dekl : func id lparent params rparent arrow dtype
 # comp_block'
@@ -398,35 +397,19 @@ def p_condition(p):
 
     """
     if len(p) == 4 and (p[2] == "&&" or p[2] == "||"):
-        p[0] = make_node("id_compound_condition",[p[1],p[2],p[3]])
+        p[0] = make_node("id_compound_condition",[p[1],p[2],p[3]],lineno=p.lexer.lineno)
     elif len(p) == 4:
         p[0] = make_node('condition', [p[1], p[2], p[3]],lineno=p.lexer.lineno)
     elif len(p) == 2:
-        p[0] = make_node("simple_condition",[p[1]])
+        p[0] = make_node("simple_condition",[p[1]],lineno=p.lexer.lineno)
     elif len(p) == 6:
         p[0] = make_node('compound_condition',[p[1],p[2],p[3],p[4],p[5]],lineno=p.lexer.lineno)
     elif len(p) == 5:
-        p[0] = make_node("negation_condition",[p[3]])
+        p[0] = make_node("negation_condition",[p[3]],lineno=p.lexer.lineno)
     elif len(p) == 7:
-        p[0] = make_node("compound_negation_condition",[p[3],p[5],p[6]])
+        p[0] = make_node("compound_negation_condition",[p[3],p[5],p[6]],lineno=p.lexer.lineno)
 
 
-
-
-# assignment expresion
-# either a declaration of variable and assigning a value or assigning value to existing variable
-"""
-def p_ass_expression(p):
-    ''
-    ass_exp : var id ddot dtype equals expression
-    |   let id ddot dtype equals expression
-    | id equals expression
-    ''
-    if len(p) == 4:
-        p[0] = make_node('assign',[p[1],p[3]])
-    elif len(p) == 7:
-        p[0] = make_node('declaration_assign',[p[2],p[4],p[6]])
-"""
 
 
 # This function is used to parse the relational operators in the input.
