@@ -236,7 +236,7 @@ class Pl0(Pl0Parent):
         real_level = find_real_level(sub_tree, index)
         # [JT] find the entry in the symbol table by going bottom up in the stack of scopes in scope defined by
         # @param level
-        symbol_table_entry = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, name,float("inf"))
+        symbol_table_entry = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, name)
         self.store_var(symbol_table_entry)
         index += len(sub_sub_tree)
         return index, level
@@ -397,7 +397,7 @@ class Pl0(Pl0Parent):
         oper_and_equals = sub_tree[index].children[1]
         # [JT] calculate real level of indentation and find the symbol in symbol table
         real_level = find_real_level(sub_tree, index)
-        symbol = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, symbol_name,float("inf"))
+        symbol = find_entry_in_symbol_table(symbol_table, self.current_scope, real_level, symbol_name)
 
         if sub_tree[index].name == "loop_step":
             self.gen_const(sub_tree[index].children[2].get_leaf_names()[0], symbol_table)

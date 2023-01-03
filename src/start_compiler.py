@@ -32,7 +32,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     y = yy.yacc(module=syntax, debug=False, write_tables=False)
     dst = y.parse(formatted_input_code)
     if dst is None:
-        raise Exception("Syntax error...")
+        raise Exception(f"Input file {input_file_name} contains an syntactical error. Compilation to PL0 is therefore not possible.")
     # Generating a table of symbols.
     table_of_symbols = {}
     generate_table_of_symbols(table_of_symbols, symbols=dst.get_leaves())
@@ -48,7 +48,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     # [JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
     semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
-        raise Exception("Semantic error...")
+        raise Exception(f"Input file {input_file_name} contains semantical error. Compilation to PL0 is therefore not possible.")
 
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()
@@ -58,4 +58,4 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
 
     return generated_code.return_code()
 
-# start_compiler("../sample_input/not_tested/helloworld.swift")
+#start_compiler("../sample_input/not_tested/helloworld.swift")

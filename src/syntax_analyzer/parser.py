@@ -354,7 +354,7 @@ def p_fun_dekl(p):
 
 def p_params_error(p):
     """
-    params: error
+    params : error
     """
     raise Exception(f" Error on line {p.lexer.lineno}. Parameters declaration contains an error.")
 # rule for function parameters, ie (<this>)
@@ -527,7 +527,7 @@ def p_relation_operator(p):
 def p_error(p):
     if not p:
         print(f"syntax error {p}")
-    raise Exception (f"Unrecognized token {p.value} on line {p.lexer.lineno}")
+    raise Exception (f"Unrecognized token {p.value} on line {p.lineno}")
 # for lparent loop_var condition semicolon step semicolon rparent
 # y = yacc.yacc(debug=True)
 # r = y.parse('func a() -> int {if (a<5){return 3;} return 10;}',lexer=lex)

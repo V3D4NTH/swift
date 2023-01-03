@@ -1,14 +1,11 @@
 var x: Array(10);
 someOtherFunction([1,2,3]);
-if(y){
-    x = 5;
-}
+var y:;
 func someOtherFunction(arr: Array(3)) -> Array(3){
     var xyz: Int;
     var c: Int = 0;
     var a: Int = 0;
     var b: Int = 0;
-
     for(var j: Int = 0; j < 2; j+= 1;){
         c += 1;
     }
