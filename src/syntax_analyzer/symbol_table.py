@@ -12,12 +12,10 @@ def find_real_level(symbols, index):
     return real_level_result
 
 
-def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name,lineno):
+def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name):
     # [JT] global scope
     if real_level == 0:
         if symbol_name not in symbol_table:
-            return None
-        if symbol_table[symbol_name].lineno > lineno:
             return None
         return symbol_table[symbol_name]
     # [JT] we are searching for entry of identifier in glob al scope
@@ -34,14 +32,14 @@ def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name,line
             if real_level >= scope_count:
                 continue
             indent_dic = symbol_table['_scopes'][real_level]
-            if symbol_name in indent_dic and indent_dic[symbol_name].lineno <= lineno:
+            if symbol_name in indent_dic:
                 return indent_dic[symbol_name]
 
         if symbol_name not in symbol_table:
             return None
 
         # we did not find the variable in indented blocks => it must be in global scope
-        return symbol_table[symbol_name] if symbol_table[symbol_name].lineno <= lineno else None
+        return symbol_table[symbol_name]
     else:
         # retrieve variables in the function block
         function_symbol_table = symbol_table[level]
@@ -52,16 +50,16 @@ def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name,line
             if real_level >= scope_count:
                 continue
             indent_dic = function_symbol_table.locals[real_level]
-            if symbol_name in indent_dic and indent_dic[symbol_name].lineno <= lineno:
+            if symbol_name in indent_dic:
                 return indent_dic[symbol_name]
 
         if symbol_name in function_symbol_table.params:
             return function_symbol_table.params[symbol_name]
-        if symbol_name in symbol_table and symbol_table[symbol_name].lineno <= lineno:
+        if symbol_name in symbol_table:
             return symbol_table[symbol_name]
         return None
 
-
+#first run through the tree to generate table of symbols
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level=0, address=3, index=0):
     """
         It generates a table of symbols
@@ -129,15 +127,15 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
             real_level = find_real_level(symbols, index)
             lineno = symbols[index].get_sisters()[0].lineno
             if level != "0" and symbol_table[level].locals is None:
-                # slovniky lokalnich promennych podle urovne zanoreni v tele fce
+                #stack of local variables inside function scope
                 symbol_table[level].locals = []
                 symbol_type = symbols[index].get_sisters()[0].children[0]
                 size = 1
+                #workaround for array_type, because the subtree for array type is deeper than for any other type
                 if symbol_type.name == "array_type":
                     tmp = symbol_type.get_children()
                     symbol_type = tmp[0]
                     size = tmp[1].name
-                # pushni do stacku scope fce
                 symbol_table[level].locals.append({symbols[index].name: (SymbolRecord(symbols[index].name,
                                                                                       symbol_type=symbol_type.name,
                                                                                       level=level,
@@ -148,9 +146,8 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                                                                                       address=address))})
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[level].locals[real_level - 1][symbols[index].name].const = True
-            # deklaruju promennou, ktera neni na globalni urovni
             elif level != "0":
-                # vstupuje novy vnoreny scope, vlozim do zasobniku
+                #if we are indented inside local scope of function, we push a new map into stack
                 if real_level > len(symbol_table[level].locals):
                     symbol_table[level].locals.append({})
                 current_scope_dic = symbol_table[level].locals[real_level - 1]
@@ -172,15 +169,12 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 if ancestor.get_sisters()[0].name == "let":
                     current_scope_dic[symbols[index].name].const = True
             else:
-                # vytvorim zasabni pro mozne vnorene scopes v globalnim scopeu
-                # if len(symbol_table.keys()) == 0:
-                #    symbol_table["_scopes"] = []
+
                 dic = symbol_table
                 if real_level != 0:
                     if real_level > len(symbol_table["_scopes"]):
                         symbol_table["_scopes"].append({})
                     dic = symbol_table["_scopes"][real_level - 1]
-                # spravne semanticka chyba pri vytvareni zaznamu -> bijou se nazvy v globalnim scopeu
                 if symbols[index].name in dic.keys():
                     raise Exception("Duplicate symbol:", symbols[index].name, "in", symbol_table.keys())
                 symbol_type = symbols[index].get_sisters()[0].children[0]

@@ -385,12 +385,6 @@ class Analyzer:
 
         if left_side_info[1] != right_side_info[1]:
             raise Exception(f"Error on line {lineno}. Type mismatch in addition. Addition can only be performed with integers.")
-            '''
-            if right_side_info[1] == "func" or right_side_info[1] == "func":
-                print("If you intended to use function call in expression."
-                      " Store the return value of function in a variable.")
-            '''
-
         return True
 
     def __eval_expression_divide(self, node):
@@ -407,12 +401,7 @@ class Analyzer:
         divisor_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if dividend_info[1] != divisor_info[1]:
             raise Exception("Type mismatch in division. Division can only be performed with integers.")
-            '''
-            if divisor_info[1] == "func" or dividend_info[1] == "func":
-                print("If you intended to use function call in expression."
-                      " Store the return value of function in a variable.")
-            return False
-            '''
+
         if not is_divisor_okay:
             raise Exception(f"Error on line {lineno} in division."
                             f" Expression {self.__get_string_aprox_of_subtree(expression)} contains an error. "
@@ -439,12 +428,6 @@ class Analyzer:
         right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if left_side_info[1] != right_side_info[1]:
             raise Exception(f"Error on line {lineno}. Type mismatch in subtraction. Subtraction can only be performed with integers.")
-            '''
-            if right_side_info[1] == "func" or right_side_info[1] == "func":
-                print("If you intended to use function call in expression."
-                      " Store the return value of function in a variable.")
-            return False
-            '''
         return True
 
     def __eval_if_else_stmt(self, node):
@@ -624,8 +607,7 @@ class Analyzer:
         self.ret_statement_count = previous_return_count
         self.ret_value = previous_return_val
         return True
-
-    # zde neni nic moc k overeni
+    # parameters are very strictly defined in grammar, they cant really be wrong.
     def __eval_function_parameters(self, node):
         # children = node.get_children()
         return True
@@ -633,9 +615,8 @@ class Analyzer:
     def __eval_block(self, node):
         lineno = node.lineno
         tmp_node = node
-        # projedu cely podstrom bloku
+        # traverse through block subtree - taking over "control" from the main traversal loop
         while True:
-            # vyhodnot podstrom
             children = tmp_node.get_children()
             n = len(children)
             tmp = children[0]
@@ -646,12 +627,10 @@ class Analyzer:
             if not is_statement_okay:
                 raise Exception(f"Error on line {lineno} in block.")
 
-            # konec vetveni stromu
             if len(children) == 1:
                 if tmp.name != "block":
                     self.__last_stmt_in_block = tmp.name
                 break
-            # jdi dal stromem bloku
             tmp_node = children[1]
             if n == 3:
                 tmp_node = children[2]
@@ -689,7 +668,6 @@ class Analyzer:
         tmp = self.__subtree_leaf_dtype
         data_type = children[1]
         identifier = children[0].name
-        #self.__find_identifier(identifier,lineno)
         data_type_valid = self.__eval_node(data_type)
         if not data_type_valid:
             raise Exception(f"Error on line {lineno}. "
@@ -739,7 +717,6 @@ class Analyzer:
                             f" Multiplication expression {self.__get_string_aprox_of_subtree(children[0])} contains an "
                             f"error.")
 
-
         factor_expression_valid = self.__eval_node(children[1])
         if not factor_expression_valid:
             raise Exception(f"Error on line {lineno}. Multiplication expression {self.__get_string_aprox_of_subtree(children[1])} contains an error.")
@@ -747,12 +724,6 @@ class Analyzer:
         if subtree_value[1] != subsubtree_value[1]:
             raise Exception(f"Error on line {lineno}. Type mismatch, cannot multiply types: {subtree_value[1]}, {subsubtree_value[1]}."
                   f" Multiplication is only allowed with Int data type. ")
-            '''
-            if subsubtree_value[1] == "func":
-                print("You intended to use function call in expression. "
-                      "Store the result of function call a variable first and use that variable in expression.")
-            return False
-            '''
         return True
 
     def __eval_factor_expression(self, node):
@@ -816,7 +787,6 @@ class Analyzer:
         lineno = node.lineno
         data_type = node.get_children()[0]
         self.__mark_visited(node.get_children()[0])
-        # array vyhybka
         if data_type.name == "array_type":
             data_type = data_type.get_children()[0]
         if data_type.name not in self.__data_types:
@@ -881,10 +851,10 @@ class Analyzer:
                             f"got array with length {self.__subtree_leaf_value}")
         return True
 
-    # jdi od myho lokalniho scopeu az po globalni, jestli tu promennou nenajdes
+
     def __find_identifier(self, identifier,lineno):
-        symbol = find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier,lineno)
-        if symbol is None:
+        symbol = find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier)
+        if symbol is None or (symbol.type != "func" and symbol.lineno > lineno):
             raise Exception(f"Error on line {lineno}. Identifier {identifier} not declared!")
         self.__identifier_table_entry = symbol
         self.__subtree_leaf_dtype = symbol.type
@@ -893,7 +863,7 @@ class Analyzer:
     # util function, saves information about identifier
     def __save_ident_values(self, symbol_table_record):
         self.__identifier_table_entry = symbol_table_record
-
+    # check if last found identifier is a function or not
     def __check_if_is_function(self):
         val = self.__identifier_table_entry
         if not val:
@@ -901,7 +871,7 @@ class Analyzer:
         if val.type == "func":
             return True
         return False
-
+    # generate some vague string representation of statement
     def __get_string_aprox_of_subtree(self,node):
         leaves = node.get_leaves()
         str = ""
