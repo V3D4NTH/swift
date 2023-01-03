@@ -2,8 +2,6 @@
 #  author:  Jiri Trefil
 #
 
-# klicove slova jazyku, pripadne muzeme rozsirit
-from ply import lex
 
 # A list of keywords that are used in the language.
 keywords = (
@@ -12,10 +10,12 @@ keywords = (
 
 # A list of tokens that the lexer will recognize.
 tokens = keywords + (
-    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type','boolean_type','string_type','array','int','bool'
-    , 'id', 'semicolon', 'rparent', 'lparent','lt', 'le', 'gt', 'Void',
-    'ge', 'arrow', 'rcparent', 'lcparent','lsparent','rsparent','ddot', 'comma', 'add', 'sub', 'not_equal', 'divby', 'mulby',
-    'question_mark', 'quote','exclamation_mark'
+    'equals', 'equals_equals', 'plus', 'minus', 'divide', 'multiply', 'int_type', 'boolean_type', 'string_type',
+    'array', 'int', 'bool'
+    , 'id', 'semicolon', 'rparent', 'lparent', 'lt', 'le', 'gt', 'Void',
+    'ge', 'arrow', 'rcparent', 'lcparent', 'lsparent', 'rsparent', 'ddot', 'comma', 'add', 'sub', 'not_equal', 'divby',
+    'mulby',
+    'question_mark', 'quote', 'exclamation_mark'
 )
 
 reserved_set = set(tokens)
@@ -29,26 +29,30 @@ def t_comment(t):
     r'\/\/.*'
     pass
 
+
 def t_Int(t):
     r'Int'
     t.type = reserved_map.get(t.value, "int_type")
     return t
 
+
 def t_Boolean(t):
     r'Boolean'
-    t.type = reserved_map.get(t.value,"boolean_type")
+    t.type = reserved_map.get(t.value, "boolean_type")
     return t
+
 
 def t_String(t):
     r'String'
-    t.type = reserved_map.get(t.value,"string_type")
+    t.type = reserved_map.get(t.value, "string_type")
     return t
 
 
 def t_Array(t):
     r'Array'
-    t.type = reserved_map.get(t.value,"array")
+    t.type = reserved_map.get(t.value, "array")
     return t
+
 
 def t_OR(t):
     r'\|\|'
@@ -62,14 +66,16 @@ def t_AND(t):
     return t
 
 
-
 def t_bool(t):
     r'true|false'
     return t
 
+
 def t_Void(t):
     r'Void'
     return t
+
+
 # chytam identifikatory
 # pokud je identifikator klicove slovo, zachyt to do typu
 def t_id(t):
@@ -100,6 +106,7 @@ def t_int(t):
         t.lexer.skip(1)
     return t
 
+
 # Defining the tokens that the lexer will recognize.
 t_equals = r'='
 t_equals_equals = r'=='
@@ -127,7 +134,7 @@ t_rsparent = r'\]'
 t_ddot = r'\:'
 t_comma = r'\,'
 t_question_mark = r'\?'
-t_quote =r'\"'
+t_quote = r'\"'
 t_exclamation_mark = r'\!'
 # Telling the lexer to ignore spaces and tabs.
 t_ignore = " \t"

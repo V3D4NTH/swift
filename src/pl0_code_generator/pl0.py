@@ -34,8 +34,6 @@ class Pl0(Pl0Parent):
     # [JT] level stores the current scope, 0 for global, <identifier> for function scope
     # level_numerical current indentation
     def generate_code(self, sub_tree=None, level=0, symbol_table=None):
-        # from src.syntax_analyzer.utils import find_real_level
-
         """
         It generates code for the PL/0 compiler
         :param sub_tree: The current node of the tree that we are generating code for
@@ -179,22 +177,17 @@ class Pl0(Pl0Parent):
         func_block = sub_tree[index].children[3].children[0]
         sub_sub_tree = self.clear_tree(func_block.iter_prepostorder())
         index += len(self.clear_tree(sub_tree[index].iter_prepostorder())) - len(sub_sub_tree)
-
-        locals_and_params = {}
         params = {}
         locals = []
         if symbol_table[self.curr_func_name].params is not None:
             params.update(symbol_table[self.curr_func_name].params)
         if symbol_table[self.curr_func_name].locals is not None:
             locals = symbol_table[self.curr_func_name].locals
-            # locals_and_params.update({"_indented_blocks": symbol_table[self.curr_func_name].locals})
         # [JT] evaluate function parameters first
         for new_addr, i in enumerate(params.values()):
             i.level = level
-        # [JT] number of parameters, needed to calculate the correct address for local variables
-        param_count = len(params)
         # [JT] loop through indented blocks inside the function body
-        # the core of the loop is basically the same, but it must be done for every block that exists inside the function
+        # core of the loop is basically the same, but it must be done for every block that exists inside the function
         locals_parent_scope_var_count = 0
         for i in range(len(locals)):
             current_block = locals[i]
@@ -248,42 +241,56 @@ class Pl0(Pl0Parent):
         index += len(sub_sub_tree)
         return index, level
 
-    def gen_condition(self, condition, index, level, symbol_table=None):
+    def gen_condition(self, condition, index, level, symbol_table=None, make_negation=False):
         """
-        It generates a condition
-        for a given index and level
+        It generates the code for a condition
 
         :param condition: the condition to be generated
         :param index: the index of the current node in the AST
         :param level: the level of indentation
-        :param symbol_table: a dictionary of the form {'var_name': 'var_type'}
+        :param symbol_table: a dictionary of symbols and their values
+        :param make_negation: If True, the condition will be negated, defaults to False (optional)
         """
-        if len(condition.children) > 1 and condition.children[1].get_leaf_names()[0] in self.cond_expressions.keys():
-            index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
-            index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
-            self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
-            shift = 3
+        if "negation_condition" in condition.name:
+            condition.name = "compound_condition"
+            # generates next condition(s)
+            _, index, level = self.gen_condition(condition, index, level, symbol_table,
+                                                 make_negation=True)
+            return True, index, level
         else:
-            if condition.children[0].get_leaf_names()[0] not in symbol_table:
-                self.generate_instruction(self.inst(Inst.lit), 0, int(condition.children[0].get_leaf_names()[0]))
+            if len(condition.children) > 1 and\
+                    condition.children[1].get_leaf_names()[0] in self.cond_expressions.keys():
+                index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
+                index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
+                self.cond_expressions[condition.children[1].get_leaf_names()[0]]()
+                shift = 3  # jumps over node <>= node
+            elif condition.children[0].name == "condition":
+                _, index, level = self.gen_condition(condition.children[0], index, level, symbol_table)
+                shift = 1
             else:
-                self.gen_load_symbol(symbol_table[condition.children[0].get_leaf_names()[0]])
-            shift = 1
-        if condition.name == "condition":
-            return False, index, level
-        if len(condition.children) > 2:
-            if condition.children[shift].name == "&&":
-                and_mark = "and_mark"
-                self.generate_instruction(self.inst(Inst.jmc), 0, and_mark)
-            elif condition.children[shift].name == "||":
-                or_mark = "or_mark"
+                if condition.children[0].get_leaf_names()[0] not in symbol_table:
+                    self.generate_instruction(self.inst(Inst.lit), 0, int(condition.children[0].get_leaf_names()[0]))
+                else:
+                    self.gen_load_symbol(symbol_table[condition.children[0].get_leaf_names()[0]])
+                shift = 1
+            if make_negation:
                 self.generate_instruction(self.inst(Inst.lit), 0, -1)
                 self.generate_instruction(self.inst(Inst.opr), 0, 2)
-                self.generate_instruction(self.inst(Inst.jmc), 0, or_mark)
-            # generates next condition(s)
-            _, index, level = self.gen_condition(condition.children[shift + 1], index, level, symbol_table)
-            return True, index, level
-        return False, index, level
+            if condition.name == "condition":
+                return False, index, level
+            if len(condition.children) > 2:
+                if condition.children[shift].name == "&&":
+                    and_mark = "and_mark"
+                    self.generate_instruction(self.inst(Inst.jmc), 0, and_mark)
+                elif condition.children[shift].name == "||":
+                    or_mark = "or_mark"
+                    self.generate_instruction(self.inst(Inst.lit), 0, -1)
+                    self.generate_instruction(self.inst(Inst.opr), 0, 2)
+                    self.generate_instruction(self.inst(Inst.jmc), 0, or_mark)
+                # generates next condition(s)
+                _, index, level = self.gen_condition(condition.children[shift + 1], index, level, symbol_table)
+                return True, index, level
+            return False, index, level
 
     def gen_func_call(self, sub_tree, symbol_table=None, level=0):
         """
@@ -402,8 +409,6 @@ class Pl0(Pl0Parent):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=oper_and_equals, level=level + 1)
-        #        self.generate_code(sub_tree=oper_and_equals, level=level)
-
         index += 1
         self.store_var(symbol)
         return index, level
@@ -434,8 +439,6 @@ class Pl0(Pl0Parent):
             # recursive call
             self.generate_instruction(self.inst(Inst.jmc), 0, x)
             self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-            #            self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-
             index += len(sub_sub_tree)
             for i in self.code:
                 if i[2] == x:
@@ -472,6 +475,5 @@ class Pl0(Pl0Parent):
         # shifting index to skip duplicates
         # recursive call
         self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-
         index += len(sub_sub_tree)
         return index, level

@@ -19,6 +19,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
 
     :param input_file_name: The name of the file to be parsed
     :type input_file_name: str
+    :param output_dir: The directory where the output files will be saved, defaults to ./ (optional)
     :param show_tree_with_pyqt5: If True, the tree will be displayed using PyQt5, defaults to False (optional)
     """
 
@@ -47,7 +48,7 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     # [JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
     semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
-        return
+        raise Exception("Semantic error...")
 
     # Generating the instructions for the PL/0 compiler.
     generated_code.generate_instructions()

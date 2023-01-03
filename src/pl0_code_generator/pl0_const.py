@@ -9,10 +9,6 @@ from enum import Enum
 class Pl0Const:
 
     def __init__(self):
-        self.reserved = ['=', '==', '+=', '-=', '+', '-', '/', '*', ';', '(', ')', '<', '!=', '<=', '>', '>=', '->',
-                         '}',
-                         '{', ':',
-                         ',', 'Int', 'var', 'let']
 
         self.types = [int]
 
