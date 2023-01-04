@@ -59,7 +59,8 @@ def find_entry_in_symbol_table(symbol_table, level, real_level, symbol_name):
             return symbol_table[symbol_name]
         return None
 
-#first run through the tree to generate table of symbols
+
+# first run through the tree to generate table of symbols
 def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level=0, address=3, index=0):
     """
         It generates a table of symbols
@@ -80,11 +81,11 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
             lineno = symbols[index].get_sisters()[1].lineno
             if len(ids_and_types) > 1:
                 i = 0
-                #[JT] while loop had to be used instead of for loop so i could dynamically change the driving variable 'i'
+                # [JT] while loop had to be used instead of for loop so i could dynamically change the driving variable 'i'
                 while i < len(ids_and_types):
                     identifier_name = ids_and_types[i]
-                    #[JT] array parameters consists of 3 values, name, type, size.
-                    #If i pointer hits the type or size, we want to force another iteration
+                    # [JT] array parameters consists of 3 values, name, type, size.
+                    # If i pointer hits the type or size, we want to force another iteration
                     if identifier_name == "Array":
                         continue
                     if type(identifier_name) is int:
@@ -93,15 +94,15 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                             break
                         identifier_name = ids_and_types[i]
 
-                    dtype = ids_and_types[i+1]
+                    dtype = ids_and_types[i + 1]
                     size = 1
                     if dtype == "Array":
-                        size = ids_and_types[i+2]
+                        size = ids_and_types[i + 2]
                     if ids_and_types[i] in params.keys():
                         raise Exception("Duplicate symbol:", ids_and_types[i], "in", params.keys())
 
                     params[ids_and_types[i]] = (
-                        SymbolRecord(identifier_name, dtype,size=size, param=True, level=level,
+                        SymbolRecord(identifier_name, dtype, size=size, param=True, level=level,
                                      tree_position=position_in_tree + index,
                                      real_level=real_level, lineno=lineno,
                                      address=local_address))
@@ -127,11 +128,11 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
             real_level = find_real_level(symbols, index)
             lineno = symbols[index].get_sisters()[0].lineno
             if level != "0" and symbol_table[level].locals is None:
-                #stack of local variables inside function scope
+                # stack of local variables inside function scope
                 symbol_table[level].locals = []
                 symbol_type = symbols[index].get_sisters()[0].children[0]
                 size = 1
-                #workaround for array_type, because the subtree for array type is deeper than for any other type
+                # workaround for array_type, because the subtree for array type is deeper than for any other type
                 if symbol_type.name == "array_type":
                     tmp = symbol_type.get_children()
                     symbol_type = tmp[0]
@@ -139,15 +140,15 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 symbol_table[level].locals.append({symbols[index].name: (SymbolRecord(symbols[index].name,
                                                                                       symbol_type=symbol_type.name,
                                                                                       level=level,
-                                                                                      size = size,
-                                                                                      lineno = lineno,
+                                                                                      size=size,
+                                                                                      lineno=lineno,
                                                                                       real_level=real_level,
                                                                                       tree_position=position_in_tree + index,
                                                                                       address=address))})
                 if ancestor.get_sisters()[0].name == "let":
                     symbol_table[level].locals[real_level - 1][symbols[index].name].const = True
             elif level != "0":
-                #if we are indented inside local scope of function, we push a new map into stack
+                # if we are indented inside local scope of function, we push a new map into stack
                 if real_level > len(symbol_table[level].locals):
                     symbol_table[level].locals.append({})
                 current_scope_dic = symbol_table[level].locals[real_level - 1]
@@ -162,7 +163,7 @@ def generate_table_of_symbols(symbol_table, symbols: list, level="0", real_level
                 current_scope_dic[symbols[index].name] = (SymbolRecord(symbols[index].name,
                                                                        symbol_type=symbol_type.name,
                                                                        level=level,
-                                                                       size = size,
+                                                                       size=size,
                                                                        real_level=real_level,
                                                                        tree_position=position_in_tree + index,
                                                                        address=address))

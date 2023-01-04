@@ -45,7 +45,6 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     # Showing the tree.
     visualize_dst(dst, show_tree_with_pyqt5)
 
-    # [JT] ZATIM NECHAVAM ZAKOMENTOVANO - JE TO HODNE SYROVE
     semantics_analyzer = Analyzer(dst, table_of_symbols)
     if not semantics_analyzer.Analyze():
         raise Exception(f"Input file {input_file_name} contains semantical error. Compilation to PL0 is therefore not possible.")
@@ -57,5 +56,3 @@ def start_compiler(input_file_name: str, output_dir="./", show_tree_with_pyqt5=F
     save_generated_code(generated_code, formatted_input_code, output_dir)
 
     return generated_code.return_code()
-
-#start_compiler("../sample_input/not_tested/helloworld.swift")
