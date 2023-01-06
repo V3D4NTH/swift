@@ -8,7 +8,7 @@ if __name__ == '__main__':
                         help='path to input file...',  required=True)
     parser.add_argument('-o', '--out',  default="./",
                         help='path to output dir...')
-    parser.add_argument('-qt', '--show_tree_with_pyqt5',  default="False",
+    parser.add_argument('-qt', '--show_tree_with_pyqt5',  default=False,  type=bool,
                         help='True/False')
     args = parser.parse_args()
 
