@@ -114,8 +114,7 @@ def p_dekl(p):
 
 def p_var_dekl_error(p):
     """
-    var_dekl : id ddot error semicolon
-    | id ddot error equals error semicolon
+    var_dekl : id ddot error equals error semicolon
     """
     if len(p) == 7:
         raise Exception(
@@ -128,13 +127,10 @@ def p_var_dekl_error(p):
 # This function is used to declare a variable.
 def p_var_dekl(p):
     """
-    var_dekl : id ddot dtype semicolon
-    | id ddot dtype equals expression semicolon
+    var_dekl : id ddot dtype equals expression semicolon
     """
     if len(p) == 7:
         p[0] = make_node('var_declaration_expression', [p[1], p[3], p[5]],lineno=p.lexer.lineno)
-    else:
-        p[0] = make_node('var_declaration', [p[1], p[3]],lineno=p.lexer.lineno)
 
 def p_dtype_error(p):
     """
