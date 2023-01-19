@@ -1,4 +1,4 @@
-# class responsible from semantical analysis
+# class responsible from semantic analysis
 
 from src.syntax_analyzer.symbol_table import find_entry_in_symbol_table
 
@@ -9,22 +9,18 @@ class Analyzer:
         self.__symbol_table = symbol_table
         self.__visited_nodes = set()
         self.__var_types = {"let", "var"}
-        self.__data_types = {"Int", "Boolean","Array","String"}
-        # aktualni zanoreni
+        self.__data_types = {"Int", "Boolean", "Array", "String"}
+        # actual inception
         self.real_level = 0
-        # global scope (0) nebo jmeno funkce
+        # global scope (0) or name of func
         self.level = 0
-        # pocet returnu ve funkci, maximalne povolen 1
+        # ret_statement_count in curr function max is 1
         self.ret_statement_count = 0
-        # co se z funkce vraci
+        # ret val type
         self.ret_value = None
-        # po vyhodnoceni nejakeho vyrazu se sem placne datovy typ toho vyrazu
-        # tedy jestli je to boolean, int, ...
-        # slouzi pro porovnani s datovym typem, tedy do booleanu nemuzu dat int expression atd
         self.__subtree_leaf_dtype = None
         self.__subtree_leaf_value = None
         self.__identifier_table_entry = None
-        # nazev posledniho nodeu v tele bloku -> u bloku funkce toto nezbytne musi byt return statement.
         self.__last_stmt_in_block = None
 
     # preorder tree traversal
@@ -71,7 +67,7 @@ class Analyzer:
             subtree_okay = self.__eval_factor(node)
         elif node_name == "function_call":
             subtree_okay = self.__eval_function_call(node)
-        elif node_name == "var_value" or node_name == "var_value_boolean" or node_name=="var_value_string" or node_name=="var_value_identifier":
+        elif node_name == "var_value" or node_name == "var_value_boolean" or node_name == "var_value_string" or node_name == "var_value_identifier":
             subtree_okay = self.__eval_var_value(node)
         elif node_name == "function_declaration":
             subtree_okay = self.__eval_function_declaration(node)
@@ -130,8 +126,7 @@ class Analyzer:
         self.__mark_visited(node)
         return subtree_okay
 
-
-    def __eval_array_value(self,node):
+    def __eval_array_value(self, node):
         children = node.get_children()
         int_list = children[0]
         int_count = 1
@@ -139,7 +134,7 @@ class Analyzer:
             val = int_list.get_children()
             if len(val) == 1:
                 break
-            #value assigned to array index - can be only integer - no need to check it
+            # value assigned to array index - can be only integer - no need to check it
             array_value = val[0]
             int_list = val[1]
             int_count += 1
@@ -147,25 +142,25 @@ class Analyzer:
         self.__subtree_leaf_dtype = "Array"
         return True
 
-
-    def __eval_compound_negation_condition(self,node):
+    def __eval_compound_negation_condition(self, node):
         lineno = node.lineno
         children = node.get_children()
         left_cond = children[0]
         right_cond = children[2]
         if not self.__eval_node(left_cond):
-            raise Exception(f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(left_cond)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(left_cond)} contains an error.")
         if not self.__eval_node(right_cond):
             leaves = left_cond.get_leaves()
             str = ""
             for i in range(leaves):
                 str += leaves[i].str
-            raise Exception(f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(right_cond)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(right_cond)} contains an error.")
 
         return True
 
-
-    def __eval_array_var_modification(self,node):
+    def __eval_array_var_modification(self, node):
         lineno = node.lineno
         children = node.get_children()
         identifier = children[0].name
@@ -173,40 +168,42 @@ class Analyzer:
         # if array assignment cannot be done for every operation (for some reason), we can catch it here
         operation = children[2].name
         expression = children[3]
-        if not self.__find_identifier(identifier,lineno):
+        if not self.__find_identifier(identifier, lineno):
             raise Exception(f"Error on line {lineno}. Variable {identifier} on line {lineno} is not defined.")
 
         if self.__identifier_table_entry.size <= index:
-            raise Exception (f"Error on line {lineno}. Array out of bounds. Index value {index} is too large. "
-                             f"Lenght of array {identifier} is {self.__identifier_table_entry.size}.")
+            raise Exception(f"Error on line {lineno}. Array out of bounds. Index value {index} is too large. "
+                            f"Lenght of array {identifier} is {self.__identifier_table_entry.size}.")
 
         if not self.__eval_node(expression):
-            raise Exception(f"Error on line {lineno}. Expression {self.__get_string_aprox_of_subtree(expression)} contains an error. "
-                            f"That value cannot be assigned to array.")
+            raise Exception(
+                f"Error on line {lineno}. Expression {self.__get_string_aprox_of_subtree(expression)} contains an error. "
+                f"That value cannot be assigned to array.")
         if self.__subtree_leaf_dtype != "Int":
             raise Exception(f"Error on line {lineno}. Only integers can be assigned to array {identifier}."
                             f" Array with values of type:  {self.__subtree_leaf_dtype} is not supported.")
 
         return True
 
-    def __eval_id_compound_condition(self,node):
+    def __eval_id_compound_condition(self, node):
         lineno = node.lineno
         children = node.get_children()
         expr = children[0]
         condition = children[2]
         if not self.__eval_node(expr):
-            raise Exception(f"Error on line {lineno} in condition. Expression {self.__get_string_aprox_of_subtree(expr)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno} in condition. Expression {self.__get_string_aprox_of_subtree(expr)} contains an error.")
         if self.__subtree_leaf_dtype != "Boolean":
             raise Exception(f"Error on line {lineno} in condition. Only boolean values can be used in condition.")
         if not self.__eval_node(condition):
-            raise Exception(f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(condition)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(condition)} contains an error.")
         return True
 
-
-    #only value in condition
-    #the value must be an identifier
-    #and the variable must be a boolean
-    def __eval_simple_condition(self,node):
+    # only value in condition
+    # the value must be an identifier
+    # and the variable must be a boolean
+    def __eval_simple_condition(self, node):
         lineno = node.lineno
         tmp = self.__subtree_leaf_value
         children = node.get_children()
@@ -220,8 +217,7 @@ class Analyzer:
         self.__subtree_leaf_value = tmp
         return True
 
-
-    def __eval_ternary_operator(self,node):
+    def __eval_ternary_operator(self, node):
         lineno = node.lineno
         children = node.get_children()
         condition = children[0]
@@ -239,8 +235,9 @@ class Analyzer:
                             f" Expression in ternary operator: {self.__get_string_aprox_of_subtree(expression_true)}"
                             f" on the left side contains an error.")
         if self.__check_if_is_function():
-            raise Exception(f"Error on line {lineno}. Function call {self.__get_string_aprox_of_subtree(expression_true)}"
-                            f" cannot be used in ternary operator.")
+            raise Exception(
+                f"Error on line {lineno}. Function call {self.__get_string_aprox_of_subtree(expression_true)}"
+                f" cannot be used in ternary operator.")
 
         left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         is_false_exp_ok = self.__eval_node(expression_false)
@@ -260,30 +257,29 @@ class Analyzer:
                             f" Both expressions of ternary operator must be of the same type.")
         return True
 
-
-    def __eval_negation_condition(self,node):
+    def __eval_negation_condition(self, node):
         lineno = node.lineno
         children = node.get_children()
         condition = children[0]
         condition_ok = self.__eval_node(condition)
         if not condition_ok:
-            raise Exception(f"Error on line {lineno}. Condition { self.__get_string_aprox_of_subtree(condition)} ")
+            raise Exception(f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(condition)} ")
         if self.__subtree_leaf_dtype != "Int" and self.__subtree_leaf_dtype != "Boolean":
             raise Exception(f"Error on line {lineno}. Negation is only defined for integers or booleans."
-                  f" Got {self.__subtree_leaf_dtype}.")
+                            f" Got {self.__subtree_leaf_dtype}.")
         return True
 
-
-    def __eval_expression_in_parenthesis(self,node):
+    def __eval_expression_in_parenthesis(self, node):
         lineno = node.lineno
         children = node.get_children()
         expression = children[0]
         is_expression_okay = self.__eval_node(expression)
         if not is_expression_okay:
-            raise Exception(f"Error on line {lineno}. Expression: {self.__get_string_aprox_of_subtree(expression)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Expression: {self.__get_string_aprox_of_subtree(expression)} contains an error.")
         return True
 
-    def __eval_unary_minus(self,node):
+    def __eval_unary_minus(self, node):
         lineno = node.lineno
         children = node.get_children()
         expression = children[1]
@@ -296,7 +292,7 @@ class Analyzer:
                             f"Unary minus can only be performed on integers.")
         return True
 
-    def __eval_compound_condition(self,node):
+    def __eval_compound_condition(self, node):
         lineno = node.lineno
         children = node.get_children()
         left_side = children[0]
@@ -313,7 +309,8 @@ class Analyzer:
             raise Exception(f"Error on line {lineno}, function call cannot be used in condition!")
         right_side_okay = self.__eval_node(right_side)
         if not right_side_okay:
-            raise Exception(f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(right_side)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Condition {self.__get_string_aprox_of_subtree(right_side)} contains an error.")
         is_function_call = self.__check_if_is_function()
         if is_function_call:
             raise Exception(f"Error on line {lineno}, function call cannot be used in condition.")
@@ -326,7 +323,7 @@ class Analyzer:
             raise Exception(f"Error on line {lineno}. Compound condition contains an error.")
         return True
 
-    def __eval_while_statement(self,node):
+    def __eval_while_statement(self, node):
         lineno = node.lineno
         children = node.get_children()
         condition = children[0]
@@ -341,7 +338,7 @@ class Analyzer:
             raise Exception(f"Error on line {lineno}. Compound block of while statement contains an error.")
         return True
 
-    def __eval_repeat_statement(self,node):
+    def __eval_repeat_statement(self, node):
         lineno = node.lineno
         children = node.get_children()
         body = children[0]
@@ -354,7 +351,6 @@ class Analyzer:
         if not is_body_okay:
             raise Exception(f"Error on line {lineno}. Compound block of repeat statement contains an error.")
         return True
-
 
     def __eval_return_statement(self, node):
         lineno = node.lineno
@@ -377,14 +373,17 @@ class Analyzer:
         left_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
 
         if not is_term_expression_okay:
-            raise Exception(f"Error on line {lineno}. Addition expression {self.__get_string_aprox_of_subtree(term)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Addition expression {self.__get_string_aprox_of_subtree(term)} contains an error.")
         is_factor_okay = self.__eval_node(factor)
         right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if not is_factor_okay:
-            raise Exception(f"Error on line {lineno}. Addition expression {self.__get_string_aprox_of_subtree(factor)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno}. Addition expression {self.__get_string_aprox_of_subtree(factor)} contains an error.")
 
         if left_side_info[1] != right_side_info[1]:
-            raise Exception(f"Error on line {lineno}. Type mismatch in addition. Addition can only be performed with integers.")
+            raise Exception(
+                f"Error on line {lineno}. Type mismatch in addition. Addition can only be performed with integers.")
         return True
 
     def __eval_expression_divide(self, node):
@@ -427,7 +426,8 @@ class Analyzer:
 
         right_side_info = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if left_side_info[1] != right_side_info[1]:
-            raise Exception(f"Error on line {lineno}. Type mismatch in subtraction. Subtraction can only be performed with integers.")
+            raise Exception(
+                f"Error on line {lineno}. Type mismatch in subtraction. Subtraction can only be performed with integers.")
         return True
 
     def __eval_if_else_stmt(self, node):
@@ -438,7 +438,8 @@ class Analyzer:
         else_body = children[2]
         is_condition_okay = self.__eval_node(condition)
         if not is_condition_okay:
-            raise Exception(f"Error on line {lineno} in if statement. Condition {self.__get_string_aprox_of_subtree(condition)} contains an error.")
+            raise Exception(
+                f"Error on line {lineno} in if statement. Condition {self.__get_string_aprox_of_subtree(condition)} contains an error.")
         is_if_body_okay = self.__eval_node(if_body)
         if not is_if_body_okay:
             raise Exception(f"Error on line {lineno} in body of if statement.")
@@ -468,19 +469,21 @@ class Analyzer:
         identifier = children[0].name
         modification_operator = children[1].name
         expression = children[2]
-        is_valid_identifier = self.__find_identifier(identifier,lineno)
+        is_valid_identifier = self.__find_identifier(identifier, lineno)
         if not is_valid_identifier:
             raise Exception(f"Error on line {lineno}. Identifier {identifier} is not defined.")
         if self.__identifier_table_entry.const:
             raise Exception(f"Error on line {lineno} in variable modification identifier {identifier} is a constant. "
-                  f"Its value cannot be adjusted at runtime.")
+                            f"Its value cannot be adjusted at runtime.")
         is_valid_expression = self.__eval_node(expression)
         if not is_valid_expression:
-            raise Exception(f"Error on line {lineno} in variable modification when updating value of variable {identifier}. "
-                  f"The assigned expression {self.__get_string_aprox_of_subtree(expression)} is not valid.")
+            raise Exception(
+                f"Error on line {lineno} in variable modification when updating value of variable {identifier}. "
+                f"The assigned expression {self.__get_string_aprox_of_subtree(expression)} is not valid.")
         if modification_operator != "=" and self.__check_if_is_function():
-            raise Exception(f"Error on line {lineno} in variable modification when updating value of variable {identifier}."
-                  f" Function call can be only used with assignment operator, '='.")
+            raise Exception(
+                f"Error on line {lineno} in variable modification when updating value of variable {identifier}."
+                f" Function call can be only used with assignment operator, '='.")
         return True
 
     def __eval_function_declaration(self, node):
@@ -505,10 +508,12 @@ class Analyzer:
                             f" {self.__get_string_aprox_of_subtree(loop_var)} in for loop statement")
         is_loop_condition_okay = self.__eval_node(condition)
         if not is_loop_condition_okay:
-            raise Exception(f"Error on line {lineno}. for loop condition {self.__get_string_aprox_of_subtree(condition)} is not correct.")
+            raise Exception(
+                f"Error on line {lineno}. for loop condition {self.__get_string_aprox_of_subtree(condition)} is not correct.")
         is_step_okay = self.__eval_node(step)
         if not is_step_okay:
-            raise Exception(f"Error on line {lineno}, step statement of for loop {self.__get_string_aprox_of_subtree(step)} is not correct.")
+            raise Exception(
+                f"Error on line {lineno}, step statement of for loop {self.__get_string_aprox_of_subtree(step)} is not correct.")
         is_body_okay = self.__eval_node(body)
         if not is_body_okay:
             raise Exception(f"Error on line {lineno} in body of for loop.")
@@ -541,7 +546,7 @@ class Analyzer:
         lineno = node.lineno
         children = node.get_children()
         identifier = children[0].name
-        is_valid_identifier = self.__find_identifier(identifier,lineno)
+        is_valid_identifier = self.__find_identifier(identifier, lineno)
         if not is_valid_identifier:
             raise Exception(f"Error on line {lineno} in for loop step. {identifier} is not declared.")
         if self.__identifier_table_entry.const:
@@ -593,7 +598,8 @@ class Analyzer:
         last_stmt_in_body = self.__last_stmt_in_block
         if return_type_val != "Void":
             if self.ret_statement_count == 0:
-                raise Exception(f"Error on line {lineno}. Body of function: {function_name} does not contain one return statement. ")
+                raise Exception(
+                    f"Error on line {lineno}. Body of function: {function_name} does not contain one return statement. ")
             elif self.ret_statement_count > 1:
                 raise Exception(f"Error on line {lineno}. Function {function_name} can have only one return statement.")
             elif last_stmt_in_body != "return_statement":
@@ -601,13 +607,13 @@ class Analyzer:
                                 f"Last statement in function block of function {function_name} "
                                 f"which is of type {return_type_val} must be a return statement.")
 
-
         # restore previous scope
         self.level = previous_level
         self.ret_statement_count = previous_return_count
         self.ret_value = previous_return_val
         return True
-    # parameters are very strictly defined in grammar, they cant really be wrong.
+
+    # parameters are very strictly defined in grammar, they can't really be wrong.
     def __eval_function_parameters(self, node):
         # children = node.get_children()
         return True
@@ -657,8 +663,8 @@ class Analyzer:
         # check variable type
         if var_type.name not in self.__var_types:
             raise Exception(f"Error on line {lineno}."
-                f" Incorrect variable declaration, unknown variable type {var_type.name}."
-                f" Allowed types: {self.__var_types}")
+                            f" Incorrect variable declaration, unknown variable type {var_type.name}."
+                            f" Allowed types: {self.__var_types}")
         # continue evaluation
         return self.__eval_node(children[1])
 
@@ -683,17 +689,17 @@ class Analyzer:
         if not expression_valid:
             raise Exception(f"Error on line {lineno}. Invalid expression "
                             f"{self.__get_string_aprox_of_subtree(expression)} value in variable declaration")
-        #neresim to dal - vim, ze je to spravne, protoze to je vyhodnoceno v ramci gramatiky
         if expression.name == "const_expression_term":
             return True
         if data_type.name == "array_type":
             data_type = data_type.get_children()[0]
             if self.__identifier_table_entry.size != self.__subtree_leaf_value:
-                raise Exception(f"Error on line {lineno} when declaring an array with values. Expected {self.__identifier_table_entry.size} items, got only {self.__subtree_leaf_value}.")
+                raise Exception(
+                    f"Error on line {lineno} when declaring an array with values. Expected {self.__identifier_table_entry.size} items, got only {self.__subtree_leaf_value}.")
         data_type_compatible = data_type.name == self.__subtree_leaf_dtype
         if not data_type_compatible:
             raise Exception(f"Type mismatch, cannot assign expression of type {self.__subtree_leaf_dtype}"
-                  f" to variable with type {data_type.name}")
+                            f" to variable with type {data_type.name}")
         return data_type_compatible
 
     def __eval_expression_term(self, node):
@@ -705,12 +711,11 @@ class Analyzer:
             raise Exception(f"Error on line {lineno}. Invalid value of expression {expression}.")
         return True
 
-    # muzu nasobit jenom inty
+    # only int type can be multiplied
     def __eval_expression_multiply(self, node):
         lineno = node.lineno
         children = node.get_children()
         factor_valid = self.__eval_node(children[0])
-        # uloz par hodnota, datovy typ vyhodnoceni podstromu
         subtree_value = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
         if not factor_valid:
             raise Exception(f"Error on line {lineno}."
@@ -719,11 +724,13 @@ class Analyzer:
 
         factor_expression_valid = self.__eval_node(children[1])
         if not factor_expression_valid:
-            raise Exception(f"Error on line {lineno}. Multiplication expression {self.__get_string_aprox_of_subtree(children[1])} contains an error.")
-        subsubtree_value = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
-        if subtree_value[1] != subsubtree_value[1]:
-            raise Exception(f"Error on line {lineno}. Type mismatch, cannot multiply types: {subtree_value[1]}, {subsubtree_value[1]}."
-                  f" Multiplication is only allowed with Int data type. ")
+            raise Exception(
+                f"Error on line {lineno}. Multiplication expression {self.__get_string_aprox_of_subtree(children[1])} contains an error.")
+        sub_sub_tree_value = (self.__subtree_leaf_value, self.__subtree_leaf_dtype)
+        if subtree_value[1] != sub_sub_tree_value[1]:
+            raise Exception(
+                f"Error on line {lineno}. Type mismatch, cannot multiply types: {subtree_value[1]}, {sub_sub_tree_value[1]}."
+                f" Multiplication is only allowed with Int data type. ")
         return True
 
     def __eval_factor_expression(self, node):
@@ -731,7 +738,8 @@ class Analyzer:
         children = node.get_children()
         value_valid = self.__eval_node(children[0])
         if not value_valid:
-            raise Exception(f"Error on line {lineno}. Invalid expression {self.__get_string_aprox_of_subtree(children[0])}")
+            raise Exception(
+                f"Error on line {lineno}. Invalid expression {self.__get_string_aprox_of_subtree(children[0])}")
         return value_valid
 
     def __eval_factor(self, node):
@@ -759,7 +767,7 @@ class Analyzer:
             return True
         elif node_name == "var_value_identifier":
             self.__subtree_leaf_dtype = "identifier"
-        valid_identifier = self.__find_identifier(value,lineno)
+        valid_identifier = self.__find_identifier(value, lineno)
         if not valid_identifier:
             raise Exception(f"Error on line {lineno}. Invalid identifier {value}.")
         self.__subtree_leaf_value = self.__identifier_table_entry
@@ -770,14 +778,14 @@ class Analyzer:
         lineno = node.lineno
         children = node.get_children()
         function_name = children[0].name
-        is_valid_identifier = self.__find_identifier(function_name,lineno)
+        is_valid_identifier = self.__find_identifier(function_name, lineno)
         if not is_valid_identifier:
             raise Exception(f"Error on line {lineno}. Function {function_name} is not declared.")
         function_prototype = self.__identifier_table_entry
         function_arguments = children[1]
 
         function_params = function_prototype.params
-        function_call_ok = self.__check_function_call(function_params, function_arguments,lineno)
+        function_call_ok = self.__check_function_call(function_params, function_arguments, lineno)
         if not function_call_ok:
             raise Exception(f"Error on line {lineno}. Function call {function_name} contains an error. ")
         self.__subtree_leaf_value, self.__subtree_leaf_dtype = function_prototype.name, function_prototype.return_type
@@ -790,7 +798,8 @@ class Analyzer:
         if data_type.name == "array_type":
             data_type = data_type.get_children()[0]
         if data_type.name not in self.__data_types:
-            raise Exception(f"Error on line {lineno}. Invalid data type {data_type.name}. Valid data types: Int, Boolean, Array, String")
+            raise Exception(
+                f"Error on line {lineno}. Invalid data type {data_type.name}. Valid data types: Int, Boolean, Array, String")
         self.__subtree_leaf_dtype = data_type.name
         return True
 
@@ -798,7 +807,7 @@ class Analyzer:
     def __mark_visited(self, node):
         self.__visited_nodes.add(node)
 
-    def __check_function_call(self, function_params, function_arguments,lineno):
+    def __check_function_call(self, function_params, function_arguments, lineno):
         tmp = list(function_params.keys())
         walker = 0
         param_count = len(tmp)
@@ -807,13 +816,14 @@ class Analyzer:
         if len(kiddos) == 2:
             while True:
                 if walker >= param_count:
-                    raise Exception(f"Error on line {lineno}. Too many arguments, expected {param_count}, got at least {walker}.")
+                    raise Exception(
+                        f"Error on line {lineno}. Too many arguments, expected {param_count}, got at least {walker}.")
 
                 # single argument
                 if len(kiddos) == 1:
                     kiddos = kiddos[0]
                     break
-                argument_ok = self.__compare_argument_and_parameter(kiddos[0], function_params[tmp[walker]],lineno)
+                argument_ok = self.__compare_argument_and_parameter(kiddos[0], function_params[tmp[walker]], lineno)
                 if not argument_ok:
                     return False
                 self.__mark_visited(kiddos[1])
@@ -825,24 +835,28 @@ class Analyzer:
             # no arguments provided
             if kiddos.name == '':
                 if param_count != 0:
-                    raise Exception(f"Error on line {lineno}. No arguments provided in function call, expected {param_count} arguments.")
+                    raise Exception(
+                        f"Error on line {lineno}. No arguments provided in function call, expected {param_count} arguments.")
                 return True
 
         argument = kiddos
-        argument_ok = self.__compare_argument_and_parameter(argument, function_params[tmp[walker]],lineno)
+        argument_ok = self.__compare_argument_and_parameter(argument, function_params[tmp[walker]], lineno)
         walker += 1
         if walker != param_count:
-            raise Exception(f"Error on line {lineno}. Invalid number of argument in function call, expected {param_count}, instead got {walker}.")
+            raise Exception(
+                f"Error on line {lineno}. Invalid number of argument in function call, expected {param_count}, instead got {walker}.")
         return argument_ok
 
-    def __compare_argument_and_parameter(self, argument, parameter,lineno):
+    def __compare_argument_and_parameter(self, argument, parameter, lineno):
         value_ok = self.__eval_node(argument)
         if not value_ok:
-            raise Exception(f"Error on line {lineno}. Invalid argument value {argument.get_children()[0].name} for parameter {parameter.name}")
+            raise Exception(
+                f"Error on line {lineno}. Invalid argument value {argument.get_children()[0].name} for parameter {parameter.name}")
         argument_type = self.__subtree_leaf_dtype
         function_param_type = parameter.type
         if function_param_type != argument_type:
-            raise Exception(f"Error on line {lineno}. Argument missmatch, expected argument with type {function_param_type} for parameter {parameter.name},\
+            raise Exception(
+                f"Error on line {lineno}. Argument missmatch, expected argument with type {function_param_type} for parameter {parameter.name},\
              instead got argument with type {argument_type}.")
         if parameter.type == "Array" and self.__subtree_leaf_value != parameter.size:
             raise Exception(f"Error on line {lineno}."
@@ -851,8 +865,7 @@ class Analyzer:
                             f"got array with length {self.__subtree_leaf_value}")
         return True
 
-
-    def __find_identifier(self, identifier,lineno):
+    def __find_identifier(self, identifier, lineno):
         symbol = find_entry_in_symbol_table(self.__symbol_table, self.level, self.real_level, identifier)
         if symbol is None or (symbol.type != "func" and symbol.lineno > lineno):
             raise Exception(f"Error on line {lineno}. Identifier {identifier} not declared!")
@@ -863,6 +876,7 @@ class Analyzer:
     # util function, saves information about identifier
     def __save_ident_values(self, symbol_table_record):
         self.__identifier_table_entry = symbol_table_record
+
     # check if last found identifier is a function or not
     def __check_if_is_function(self):
         val = self.__identifier_table_entry
@@ -871,8 +885,9 @@ class Analyzer:
         if val.type == "func":
             return True
         return False
+
     # generate some vague string representation of statement
-    def __get_string_aprox_of_subtree(self,node):
+    def __get_string_aprox_of_subtree(self, node):
         leaves = node.get_leaves()
         str = ""
         for i in range(len(leaves)):

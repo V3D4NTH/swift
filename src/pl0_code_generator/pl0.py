@@ -30,6 +30,7 @@ class Pl0(Pl0Parent):
         self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()), symbol_table=self.symbol_table)
         # end of code
         self.generate_instruction(self.inst(Inst.ret), 0, 0)
+        self.correct_func_call_jmp()
 
     # [JT] level stores the current scope, 0 for global, <identifier> for function scope
     # level_numerical current indentation
@@ -200,11 +201,6 @@ class Pl0(Pl0Parent):
             self.generate_instruction(self.inst(Inst.lod), level, -i)
         self.generate_code(sub_tree=sub_sub_tree, level=level,
                            symbol_table=symbol_table)
-        '''
-        for local_scope in locals:
-            self.generate_code(sub_tree=sub_sub_tree, level=level,
-                           symbol_table=local_scope)
-        '''
         index += len(sub_sub_tree)
         self.generate_instruction(self.inst(Inst.sto), level, - 1 - (len(symbol_table[self.curr_func_name].params)))
         self.generate_instruction(self.inst(Inst.ret), 0, 0)
@@ -258,7 +254,7 @@ class Pl0(Pl0Parent):
                                                  make_negation=True)
             return True, index, level
         else:
-            if len(condition.children) > 1 and\
+            if len(condition.children) > 1 and \
                     condition.children[1].get_leaf_names()[0] in self.cond_expressions.keys():
                 index, level = self.generate_code_again(index, level, symbol_table, condition.children[0])
                 index, level = self.generate_code_again(index, level, symbol_table, condition.children[2])
@@ -327,7 +323,7 @@ class Pl0(Pl0Parent):
                     args_len += 1
                 i += len(sub_sub_tree)
                 func_len = i
-                self.generate_instruction(self.inst(Inst.cal), level, symbol_table[f_name].address)
+                self.generate_instruction(self.inst(Inst.cal), level, symbol_table[f_name].id)
                 if args_len > 0:
                     self.generate_instruction(self.inst(Inst.int), 0, -args_len)
             i += 1
@@ -429,7 +425,6 @@ class Pl0(Pl0Parent):
             block2 = sub_tree[index].children[2]
         if "condition" in condition.name:
             _, index, level = self.gen_condition(condition, index, level, symbol_table=symbol_table)
-
             x = id("x" + str(level))
             self.correct_jmc_for_logical_condition(x)
             index += len(self.clear_tree(condition.iter_prepostorder()))
@@ -454,8 +449,6 @@ class Pl0(Pl0Parent):
                 y = id("y" + str(level))
                 self.generate_instruction(self.inst(Inst.jmp), 0, y)
                 self.generate_code(sub_tree=sub_sub_tree, level=level + 1, symbol_table=symbol_table)
-                #                self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
-
                 index += len(sub_sub_tree)
                 for i in self.code:
                     if i[2] == y:
@@ -477,3 +470,17 @@ class Pl0(Pl0Parent):
         self.generate_code(sub_tree=sub_sub_tree, level=level, symbol_table=symbol_table)
         index += len(sub_sub_tree)
         return index, level
+
+    def correct_func_call_jmp(self):
+        """
+        support of function call before declaration
+        """
+        functions_dict = {}
+        self.symbol_table.pop("_scopes")
+        for key in self.symbol_table:
+            if self.symbol_table[key].type == "func":
+                functions_dict[self.symbol_table[key].id] = self.symbol_table[key].address
+
+        for i in self.code:
+            if i[2] in functions_dict.keys():
+                i[2] = functions_dict[i[2]]
