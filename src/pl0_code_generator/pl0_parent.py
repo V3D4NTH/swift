@@ -51,7 +51,9 @@ class Pl0Parent(Pl0Const):
         It prints the symbol table
         """
         symbol_table_to_print = copy(self.symbol_table)
+        scopes = symbol_table_to_print["_scopes"]
         del symbol_table_to_print["_scopes"]
+        [symbol_table_to_print.update(i) for i in scopes]
         for i in symbol_table_to_print.values():
             if i.type == "func":
                 out_method(i.__str__())
