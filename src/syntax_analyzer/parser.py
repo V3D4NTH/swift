@@ -8,10 +8,7 @@ from ete3 import Tree
 from src.lex_analyzer.lexer import tokens
 from src.syntax_analyzer.utils import make_node,is_integer,get_integer_node_value
 
-"""
-syntakticky parser, pouziva lex pro semanticke vyhodnoceni 
-lexer provadi lexikalni analyzu a evaluaci hodnoty integeru a boolu
-"""
+
 
 # set priority of operations - plus minus multiply and divide will branch out the tree to the left
 # the cfg is ambiguous, therefore precedence must be defined
