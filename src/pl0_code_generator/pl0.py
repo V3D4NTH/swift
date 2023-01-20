@@ -27,6 +27,7 @@ class Pl0(Pl0Parent):
         It generates instructions for the PL/0.
         """
         self.generate_instruction(self.inst(Inst.int), 0, 3)
+        self.allocate_variables()
         self.generate_code(sub_tree=self.clear_tree(self.ast.iter_prepostorder()), symbol_table=self.symbol_table)
         # end of code
         self.generate_instruction(self.inst(Inst.ret), 0, 0)
@@ -199,6 +200,8 @@ class Pl0(Pl0Parent):
         self.generate_instruction(self.inst(Inst.int), 0, 3)
         for i in range(len(symbol_table[self.curr_func_name].params), 0, -1):
             self.generate_instruction(self.inst(Inst.lod), level, -i)
+        # allocates memory for local vars and lets
+        self.generate_instruction(self.inst(Inst.int), 0, len(locals))
         self.generate_code(sub_tree=sub_sub_tree, level=level,
                            symbol_table=symbol_table)
         index += len(sub_sub_tree)
@@ -220,7 +223,6 @@ class Pl0(Pl0Parent):
         :param symbol_table: the symbol table that the variable is being declared in
         :param level: the level of the current scope, defaults to 0 (optional)
         """
-        self.generate_instruction(self.inst(Inst.int), 0, 1)
         name = sub_tree[index].children[0].name
         sub_sub_tree = self.clear_tree(sub_tree[index].children[2].iter_prepostorder())
         if sub_tree[index].children[2].name == "const_expression_term":
@@ -302,7 +304,6 @@ class Pl0(Pl0Parent):
         while i < (len(sub_tree)):
             if sub_tree[i].name == "function_call":
                 sub_sub_tree = self.clear_tree(sub_tree[i].iter_prepostorder())
-                self.generate_instruction(self.inst(Inst.int), 0, 1)
                 f_name = sub_tree[i].children[0].name
                 f_args = sub_tree[i].children[1]
                 args_len = 0
@@ -484,3 +485,10 @@ class Pl0(Pl0Parent):
         for i in self.code:
             if i[2] in functions_dict.keys():
                 i[2] = functions_dict[i[2]]
+
+    def allocate_variables(self):
+        symbol_table_to_print = copy(self.symbol_table)
+        scopes = symbol_table_to_print["_scopes"]
+        del symbol_table_to_print["_scopes"]
+        [symbol_table_to_print.update(i) for i in scopes]
+        self.generate_instruction(self.inst(Inst.int), 0, len(symbol_table_to_print))
