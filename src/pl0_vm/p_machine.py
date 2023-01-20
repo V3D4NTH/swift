@@ -112,9 +112,6 @@ def run_pl0_code(generated_code: list) -> str:
 
         # It loads the value of the stack to the stack pointer.
         elif generated_code[instruction_pointer][0] == Inst.lod.value:
-            stack_pointer += 1
-            if stack_pointer - len(stack) > -1:
-                stack.append(0)
             stack[stack_pointer] = stack[generated_code[instruction_pointer][2] + static_base]
 
         # It stores the value of the stack pointer to the stack.
@@ -124,11 +121,12 @@ def run_pl0_code(generated_code: list) -> str:
 
         # Calling a function.
         elif generated_code[instruction_pointer][0] == Inst.cal.value:
-            stack.append(stack_pointer)
-            stack.append(0)
-            stack.append(copy(instruction_pointer))
-            instruction_pointer = generated_code[instruction_pointer][2] - 1
-            static_base = stack_pointer + 1
+            return "this pl/0 machine does not support functions\n"
+            # stack.append(stack_pointer)
+            # stack.append(0)
+            # stack.append(copy(instruction_pointer))
+            # instruction_pointer = generated_code[instruction_pointer][2] - 1
+            # static_base = stack_pointer + 1
 
         # It adds the value of the instruction to the stack pointer.
         # If the stack pointer is greater than the length of the stack, it adds 0 to the stack.
