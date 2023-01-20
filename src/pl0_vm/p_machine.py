@@ -26,8 +26,8 @@ def run_pl0_code(generated_code: list) -> str:
     :param generated_code: list
     :type generated_code: list
     """
-    if len(generated_code) > 130:
-        return "code is too long"
+    if len(generated_code) > 0:
+        return "pl/0 machine is lazy...\n"
     static_base = 0
     stack_pointer = -1
     instruction_pointer = 0
