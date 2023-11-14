@@ -1,5 +1,3 @@
-School Project: **Not so Swift Language** compiler
-
 ## Description
 - input - significantly simplified Swift language constructions
 - output - PL/0 instructions
@@ -20,10 +18,6 @@ todo
 - array
 - string
 
-
-
-### project status
-**finished**
 ## how to use
 ```
  not_so_swift_compiler.py -h
