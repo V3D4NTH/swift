@@ -1,6 +1,4 @@
-#  date: 6. 11. 2022
-#  author:  Jiri Trefil
-#
+
 
 
 # A list of keywords that are used in the language.

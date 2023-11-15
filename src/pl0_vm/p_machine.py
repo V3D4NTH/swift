@@ -1,6 +1,4 @@
-#  date: 31. 12. 2022
-#  author: Daniel Schnurpfeil
-#
+
 from copy import copy
 
 from src.pl0_code_generator.instructions import Inst, Op

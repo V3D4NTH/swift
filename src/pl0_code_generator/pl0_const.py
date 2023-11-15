@@ -1,6 +1,3 @@
-#  date: 8. 11. 2022
-#  author: Daniel Schnurpfeil
-#
 
 
 # It's a class that holds the constants used by the PL/0 compiler

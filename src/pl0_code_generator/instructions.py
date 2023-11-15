@@ -1,6 +1,4 @@
-#  date: 29. 12. 2022
-#  author: Daniel Schnurpfeil
-#
+
 from enum import Enum
 
 

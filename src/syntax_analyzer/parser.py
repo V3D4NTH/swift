@@ -1,8 +1,5 @@
-#  date: 6. 11. 2022
-#  author:  Jiri Trefil
-#
 
-# vytahnu tokeny, ktere jsem zadefinoval
+
 from ete3 import Tree
 
 from src.lex_analyzer.lexer import tokens
