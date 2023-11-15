@@ -1,6 +1,4 @@
-#  date: 11. 11. 2022
-#  author: Daniel Schnurpfeil
-#
+
 
 from ete3 import Tree
 

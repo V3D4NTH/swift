@@ -1,6 +1,3 @@
-#  date: 29. 12. 2022
-#  author: Daniel Schnurpfeil
-#
 
 # This class is used to store information about a symbol in table
 class SymbolRecord:

@@ -1,6 +1,4 @@
-#  date: 29. 12. 2022
-#  author: Daniel Schnurpfeil
-#
+
 import os
 
 from src.pl0_vm.p_machine import run_pl0_code

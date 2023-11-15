@@ -1,7 +1,4 @@
-#  date: 13. 11. 2022
-#  author: Daniel Schnurpfeil
-#
-# all testcases are validated with https://home.zcu.cz/~lipka/fjp/pl0/
+
 
 from unittest import TestCase
 
